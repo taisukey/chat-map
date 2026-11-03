@@ -1,0 +1,150 @@
+<!-- chat-map template: replace the DATA object in the script with the gathered
+     threads (nodes), relations (edges) and timeline events, then present as an
+     HTML widget. Node: {id,label,cluster,day,archived?,role}
+     Edge: {a,b,t:"branch"|"hov"|"cron"|"rel",day,note}
+     Event: {day,text}  -- day is an index into DATA.dates -->
+<style>
+.cg2-wrap{box-sizing:border-box;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;color:var(--hatch-widget-text);max-width:760px;margin:0 auto}
+.cg2-wrap *{box-sizing:border-box}
+.cg2-bar{display:flex;align-items:center;gap:10px;margin:2px 0 8px;flex-wrap:wrap}
+.cg2-play{border:1px solid var(--hatch-widget-border);background:var(--hatch-widget-surface);color:var(--hatch-widget-text);border-radius:999px;padding:5px 14px;font-size:13px;cursor:pointer}
+.cg2-date{font-size:15px;font-weight:700;min-width:118px}
+.cg2-count{font-size:12px;color:var(--hatch-widget-muted)}
+.cg2-slider{flex:1;min-width:140px;accent-color:var(--hatch-widget-accent)}
+.cg2-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--hatch-widget-muted);margin:0 0 8px}
+.cg2-chip{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.cg2-line{display:inline-block;width:18px;border-top:2px solid var(--hatch-widget-muted);margin-right:4px;vertical-align:middle}
+.cg2-line.hov{border-top:2px solid #8b5cf6}
+.cg2-line.cron{border-top:2px dashed #10b981}
+.cg2-line.rel{border-top:2px dotted var(--hatch-widget-muted)}
+#cg2Svg{width:100%;height:auto;display:block;background:var(--hatch-widget-surface);border:1px solid var(--hatch-widget-border);border-radius:12px;touch-action:none}
+#cg2Svg text{fill:var(--hatch-widget-text);font-size:11px;font-weight:600;pointer-events:none}
+#cg2Svg .edge{stroke:var(--hatch-widget-muted);stroke-width:1.4}
+#cg2Svg .edge.hov{stroke:#8b5cf6;stroke-width:1.8}
+#cg2Svg .edge.cron{stroke:#10b981;stroke-width:1.6;stroke-dasharray:6 4}
+#cg2Svg .edge.rel{stroke:var(--hatch-widget-muted);stroke-width:1.1;stroke-dasharray:2 4}
+#cg2Svg .node{cursor:grab;transition:opacity .35s}
+#cg2Svg .node circle{stroke:var(--hatch-widget-bg);stroke-width:2}
+#cg2Svg .node.archived{opacity:.45}
+#cg2Svg .node.unborn{opacity:0;pointer-events:none}
+#cg2Svg .edge.unborn{opacity:0}
+#cg2Svg .node.dim{opacity:.12}
+#cg2Svg .edge.dim{opacity:.08}
+#cg2Svg .node.sel circle{stroke:var(--hatch-widget-text);stroke-width:3}
+.cg2-detail{margin-top:10px;border:1px solid var(--hatch-widget-border);border-radius:12px;padding:10px 12px;background:var(--hatch-widget-surface)}
+.cg2-detail h4{margin:0 0 4px;font-size:14px}
+.cg2-detail .role{font-size:13px;margin:0 0 6px}
+.cg2-detail ul{margin:4px 0 0;padding-left:18px;font-size:12.5px;color:var(--hatch-widget-muted)}
+.cg2-detail .hint{font-size:12.5px;color:var(--hatch-widget-muted);margin:0}
+.cg2-tag{display:inline-block;font-size:11px;border:1px solid var(--hatch-widget-border);border-radius:999px;padding:1px 8px;margin-left:6px;color:var(--hatch-widget-muted);vertical-align:2px}
+.cg2-feed{margin-top:10px;border:1px solid var(--hatch-widget-border);border-radius:12px;padding:8px 12px;background:var(--hatch-widget-surface)}
+.cg2-feed h5{margin:2px 0 6px;font-size:12px;color:var(--hatch-widget-muted);letter-spacing:.06em}
+.cg2-ev{display:flex;gap:10px;font-size:12.5px;padding:4px 6px;border-radius:8px;opacity:.35}
+.cg2-ev .d{font-weight:700;min-width:76px}
+.cg2-ev.past{opacity:1}
+.cg2-ev.now{opacity:1;background:var(--hatch-widget-surface-muted);outline:1px solid var(--hatch-widget-accent)}
+.cg2-toggle{display:block;margin-top:8px;font-size:12.5px;color:var(--hatch-widget-muted)}
+.cg2-note{font-size:11.5px;color:var(--hatch-widget-muted);margin-top:6px}
+</style>
+<div class="cg2-wrap">
+  <div class="cg2-bar">
+    <button class="cg2-play" id="cg2Play" type="button">▶ 最初から再生</button>
+    <span class="cg2-date" id="cg2Date"></span>
+    <span class="cg2-count" id="cg2Count"></span>
+    <input class="cg2-slider" id="cg2Slider" type="range" min="0" step="1" value="0">
+  </div>
+  <div class="cg2-legend">
+    <span><span class="cg2-chip" style="background:#d97706"></span>起点</span>
+    <span><span class="cg2-chip" style="background:#3b82f6"></span>端末・環境</span>
+    <span><span class="cg2-chip" style="background:#ef4444"></span>ものづくり</span>
+    <span><span class="cg2-chip" style="background:#10b981"></span>運用・生活</span>
+    <span><span class="cg2-line"></span>分岐</span>
+    <span><span class="cg2-line hov"></span>引継ぎ</span>
+    <span><span class="cg2-line cron"></span>定期配信</span>
+    <span><span class="cg2-line rel"></span>関連</span>
+  </div>
+  <svg id="cg2Svg" viewBox="0 0 720 470" role="img" aria-label="チャットの関係グラフ（タイムライン連動）">
+    <defs>
+      <marker id="cg2ArrV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b5cf6"></path></marker>
+      <marker id="cg2ArrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#10b981"></path></marker>
+    </defs>
+    <g id="cg2Edges"></g>
+    <g id="cg2Halo"></g>
+    <g id="cg2Nodes"></g>
+  </svg>
+  <div class="cg2-detail" id="cg2Detail"><p class="hint">スライダーを動かすと、その日までに生まれていたチャットだけが残ります。ノードをタップで詳細、ドラッグで移動。</p></div>
+  <div class="cg2-feed"><h5>HISTORIC TIMELINE</h5><div id="cg2Feed"></div></div>
+  <label class="cg2-toggle"><input type="checkbox" id="cg2Arch" checked> アーカイブ済みのチャットも表示する</label>
+  <p class="cg2-note">日付は会話と作業の記録に基づく目安です（分岐日＝そのチャットで本格的に動き出した日）。</p>
+</div>
+<script>
+(function(){
+var DATA={
+dates:["2026-01-01","2026-01-02"],
+nodes:[
+{id:"main",label:"Main chat",cluster:"hub",day:0,role:"全体の起点"},
+{id:"side",label:"Side chat の例",cluster:"env",day:1,role:"サンプル。実際のチャットに置き換える"}
+],
+edges:[
+{a:"main",b:"side",t:"branch",day:1,note:"サンプル"}
+],
+events:[
+{day:0,text:"Main chat から始まる"},
+{day:1,text:"Side chat が分岐"}
+]};
+var DATES=DATA.dates,NODES=DATA.nodes,EDGES=DATA.edges,EVENTS=DATA.events;
+var COLORS={hub:"#d97706",env:"#3b82f6",mono:"#ef4444",ops:"#10b981"};
+var TNAME={branch:"分岐",hov:"引継ぎ",cron:"定期配信",rel:"関連"};
+var NS="http://www.w3.org/2000/svg";
+var svg=document.getElementById("cg2Svg"),gE=document.getElementById("cg2Edges"),gN=document.getElementById("cg2Nodes"),gH=document.getElementById("cg2Halo");
+var W=720,H=470,byId={},deg={};
+NODES.forEach(function(n,i){var ang=i/Math.max(1,NODES.length)*Math.PI*2;n.x=W/2+Math.cos(ang)*195;n.y=H/2+Math.sin(ang)*150;n.vx=0;n.vy=0;byId[n.id]=n;deg[n.id]=0;});
+EDGES.forEach(function(e){deg[e.a]++;deg[e.b]++;e.na=byId[e.a];e.nb=byId[e.b];});
+function R(n){return 13+Math.min(10,deg[n.id]*1.4);}
+EDGES.forEach(function(e){var l=document.createElementNS(NS,"line");l.setAttribute("class","edge "+(e.t==="branch"?"":e.t));if(e.t==="hov")l.setAttribute("marker-end","url(#cg2ArrV)");if(e.t==="cron")l.setAttribute("marker-end","url(#cg2ArrG)");gE.appendChild(l);e.el=l;});
+var drag=null;
+NODES.forEach(function(n){var g=document.createElementNS(NS,"g");g.setAttribute("class","node"+(n.archived?" archived":""));var c=document.createElementNS(NS,"circle");c.setAttribute("r",R(n));c.setAttribute("fill",COLORS[n.cluster]||"#888");var t=document.createElementNS(NS,"text");t.setAttribute("text-anchor","middle");t.textContent=n.label;g.appendChild(c);g.appendChild(t);gN.appendChild(g);n.el=g;n.tel=t;
+ g.addEventListener("pointerdown",function(ev){ev.preventDefault();drag=n;svg.setPointerCapture(ev.pointerId);});
+ g.addEventListener("click",function(ev){ev.stopPropagation();select(n);});});
+function render(){EDGES.forEach(function(e){e.el.setAttribute("x1",e.na.x);e.el.setAttribute("y1",e.na.y);e.el.setAttribute("x2",e.nb.x);e.el.setAttribute("y2",e.nb.y);});
+ NODES.forEach(function(n){n.el.setAttribute("transform","translate("+n.x+","+n.y+")");n.tel.setAttribute("y",R(n)+15);});}
+var frame=0;
+function step(){frame++;
+ for(var i=0;i<NODES.length;i++)for(var j=i+1;j<NODES.length;j++){var a=NODES[i],b=NODES[j],dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy+0.01,d=Math.sqrt(d2),f=2600/d2;dx/=d;dy/=d;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f;}
+ EDGES.forEach(function(e){var a=e.na,b=e.nb,dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)+0.01,rest=e.t==="rel"?140:112,f=(d-rest)*0.02;dx/=d;dy/=d;a.vx+=dx*f*d*0.05;a.vy+=dy*f*d*0.05;b.vx-=dx*f*d*0.05;b.vy-=dy*f*d*0.05;});
+ NODES.forEach(function(n){n.vx+=(W/2-n.x)*0.008;n.vy+=(H/2-n.y)*0.008;n.vx*=0.82;n.vy*=0.82;if(n!==drag){n.x+=n.vx;n.y+=n.vy;}n.x=Math.max(46,Math.min(W-46,n.x));n.y=Math.max(30,Math.min(H-42,n.y));});
+ render();if(frame<110)requestAnimationFrame(step);}
+requestAnimationFrame(step);
+svg.addEventListener("pointermove",function(ev){if(!drag)return;var r=svg.getBoundingClientRect();drag.x=(ev.clientX-r.left)*W/r.width;drag.y=(ev.clientY-r.top)*H/r.height;render();});
+svg.addEventListener("pointerup",function(){drag=null;});
+svg.addEventListener("click",function(){select(null);});
+var LAST=DATES.length-1,cur=LAST,showArch=true;
+var dateEl=document.getElementById("cg2Date"),countEl=document.getElementById("cg2Count"),slider=document.getElementById("cg2Slider"),feed=document.getElementById("cg2Feed");
+slider.max=LAST;slider.value=LAST;
+EVENTS.forEach(function(ev){var d=document.createElement("div");d.className="cg2-ev";d.innerHTML='<span class="d">'+DATES[ev.day]+"</span><span>"+ev.text+"</span>";feed.appendChild(d);ev.el=d;});
+function halo(n){var c=document.createElementNS(NS,"circle");c.setAttribute("cx",n.x);c.setAttribute("cy",n.y);c.setAttribute("r",R(n));c.setAttribute("fill","none");c.setAttribute("stroke",COLORS[n.cluster]||"#888");c.setAttribute("stroke-width","2");gH.appendChild(c);var r0=R(n),t0=null;
+ function anim(ts){if(!t0)t0=ts;var p=(ts-t0)/600;if(p>=1){c.remove();return;}c.setAttribute("r",r0+p*26);c.setAttribute("opacity",1-p);requestAnimationFrame(anim);}requestAnimationFrame(anim);}
+function setDay(d,animate){var prev=cur;cur=d;slider.value=d;dateEl.textContent=DATES[d];
+ var cnt=0;NODES.forEach(function(n){var born=n.day<=d;if(born)cnt++;var hide=!born||(n.archived&&!showArch);n.el.classList.toggle("unborn",!born);n.el.style.display=hide?"none":"";if(animate&&born&&n.day>prev)halo(n);});
+ EDGES.forEach(function(e){var vis=e.day<=d&&e.na.day<=d&&e.nb.day<=d;e.el.classList.toggle("unborn",!vis);e.el.style.display=(vis&&!((e.na.archived||e.nb.archived)&&!showArch))?"":"none";});
+ countEl.textContent="チャット "+cnt+" 件が存在";
+ EVENTS.forEach(function(ev){ev.el.classList.toggle("past",ev.day<d);ev.el.classList.toggle("now",ev.day===d);});}
+slider.addEventListener("input",function(){stopPlay();setDay(parseInt(slider.value,10),false);});
+var timer=null;
+function stopPlay(){if(timer){clearInterval(timer);timer=null;document.getElementById("cg2Play").textContent="▶ 最初から再生";}}
+document.getElementById("cg2Play").addEventListener("click",function(){stopPlay();setDay(0,false);var b=document.getElementById("cg2Play");b.textContent="■ 再生中…";timer=setInterval(function(){if(cur>=LAST){stopPlay();return;}setDay(cur+1,true);},750);});
+document.getElementById("cg2Arch").addEventListener("change",function(ev){showArch=ev.target.checked;setDay(cur,false);});
+var detail=document.getElementById("cg2Detail");
+function select(n){NODES.forEach(function(x){x.el.classList.remove("sel","dim");});EDGES.forEach(function(e){e.el.classList.remove("dim");});
+ if(!n){detail.innerHTML='<p class="hint">スライダーを動かすと、その日までに生まれていたチャットだけが残ります。ノードをタップで詳細、ドラッグで移動。</p>';return;}
+ n.el.classList.add("sel");var neigh={};neigh[n.id]=1;
+ EDGES.forEach(function(e){if(e.a===n.id)neigh[e.b]=1;if(e.b===n.id)neigh[e.a]=1;});
+ NODES.forEach(function(x){if(!neigh[x.id])x.el.classList.add("dim");});
+ EDGES.forEach(function(e){if(e.a!==n.id&&e.b!==n.id)e.el.classList.add("dim");});
+ var items="";
+ EDGES.forEach(function(e){var other=null,dir="";if(e.a===n.id){other=byId[e.b];dir=e.t==="rel"?"―":"→";}else if(e.b===n.id){other=byId[e.a];dir=e.t==="rel"?"―":"←";}
+  if(other)items+="<li>"+other.label+" "+dir+" "+TNAME[e.t]+"（"+DATES[e.day]+"）"+(e.note?"："+e.note:"")+"</li>";});
+ detail.innerHTML="<h4>"+n.label+(n.archived?'<span class="cg2-tag">アーカイブ済み</span>':"")+'</h4><p class="role">'+n.role+'</p><p class="role">誕生日：'+DATES[n.day]+"</p>"+(items?"<ul>"+items+"</ul>":"");}
+setDay(LAST,false);
+})();
+</script>
