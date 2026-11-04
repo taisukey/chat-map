@@ -49,6 +49,20 @@ The v2 template unifies the graph and a grouped-cards view in one widget, adds a
 
 *The same landscape as grouped cards.*
 
+## FAQ
+
+**Is this an app?**
+No — chat-map is a *skill*: a set of instructions that an AI assistant follows. There is nothing to install and run on its own; the assistant does the work.
+
+**How do I use it?**
+Give your Muse assistant this repository (or install the skill) and ask it to "map my chats". The assistant enumerates your threads, dates them from the record, classifies the relations between them, and hands you back a single HTML map like the ones above. You never write code.
+
+**Will it work with my conversations?**
+Yes — the map is built from your own conversation record, so its contents are different for everyone. It helps most if you actually use side chats: the more threads and handovers you have, the more the landscape is worth drawing. Dates or relations the record cannot support are labelled estimates, never invented.
+
+**Does it work with other AI agents?**
+The skill uses the standard agent-skills format (`SKILL.md`), so other compatible agents may be able to follow it. It has only been verified with Muse.
+
 ## 日本語
 
 チャットが Main と多数の Side chat に枝分かれし、引き継ぎや定期配信が絡むと全体像が見えなくなります。chat-map は、各スレッドをノード、関係（分岐／引継ぎ／定期配信／関連）をエッジとして一枚の地図にし、日付スライダーと再生で「いつ何が生まれたか」まで辿れるようにするエージェントスキルです。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
@@ -56,6 +70,20 @@ The v2 template unifies the graph and a grouped-cards view in one widget, adds a
 ![chat-map v2 デモ — 日ごとに育つ地図](docs/images/demo-ja.gif)
 
 *タイムライン再生つきのグラフ表示（サンプルデータ）。*
+
+### よくある質問
+
+**これはアプリですか？**
+いいえ、AIアシスタント Muse 用の「スキル」（手順書）です。単体で動くソフトではありません。
+
+**どうやって使うのですか？**
+Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけです。会話の一覧と関係を Muse が記録から集めて、地図のページに仕上げます。コードを書く必要はありません。
+
+**自分の会話でも使えますか？**
+はい。自分の記録から作るので中身は人それぞれです。サイドチャットを使い分けている人ほど効きます。記録で裏付けできない日付は「目安」と明記します。
+
+**他の AI エージェントでも使えますか？**
+スキルは共通規格（SKILL.md）で書かれているため、理屈の上では他の対応エージェントでも応用できるはずですが、動作確認は Muse のみです。
 
 ---
 
