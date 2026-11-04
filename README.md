@@ -27,7 +27,12 @@ It never invents a date or a relation, never posts into the threads it maps, and
 ## Layout
 
 - `SKILL.md` — the skill itself
-- `assets/chat-map-template.html` — the Graph × Historic Timeline widget template
+- `assets/chat-map-template.html` — the Graph × Historic Timeline widget template (v1)
+- `assets/chat-map-template-v2.html` — the unified widget template (v2)
+
+## v2
+
+The v2 template unifies the graph and a grouped-cards view in one widget, adds a standard/dark tone toggle (colours only — the layout never shifts), and can optionally link timeline entries to Obsidian summary notes via `obsidian://` URIs. Those links only work when the HTML is opened in a real browser: inside Muse's own clients, custom URL schemes are blocked, and the template renders the timeline as plain text there instead. The v1 template remains available as the original graph-only version.
 
 ## 日本語
 

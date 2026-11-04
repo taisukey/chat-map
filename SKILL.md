@@ -5,7 +5,12 @@ description: Draw the user's conversation landscape as one map — every chat th
 
 # Chat Map
 
-Draw the user's conversation landscape as one map: every chat thread (a main chat and its side chats / topic threads) as a node, the relations between them as edges, fused with a historic timeline so the map can be replayed day by day and watched growing. Born from the user's own 16-thread Muse landscape on 2026-11-03; no equivalent skill was found in the user's skill-hub catalog (1,258 skills) or in a GitHub search — the nearest neighbour, knowledge-graph-memory, turns session logs into Obsidian memory notes, which is a different job.
+Draw the user's conversation landscape as one map: every chat thread (a main chat and its side chats / topic threads) as a node, the relations between them as edges, fused with a historic timeline so the map can be replayed day by day and watched growing. Born from a real 16-thread Muse landscape; no equivalent skill was found in public skill catalogs or a GitHub search at the time — the nearest neighbour, knowledge-graph-memory, turns session logs into Obsidian memory notes, which is a different job.
+
+## Status
+
+- **v1** — `assets/chat-map-template.html`: the original Graph × Historic Timeline widget.
+- **v2 (current)** — `assets/chat-map-template-v2.html`: a unified widget that adds a grouped-cards view, a tone toggle and optional Obsidian links.
 
 ## Trigger
 
@@ -22,7 +27,8 @@ Draw the user's conversation landscape as one map: every chat thread (a main cha
    - `related` （関連） — same subject or device, no transfer.
    Each edge gets the date the relation began (usually the younger thread's date) and a short note.
 4. Cluster the nodes by theme (hub / environment / making / operations, or the user's own grouping) and assign each cluster a colour.
-5. Render with the bundled template `assets/chat-map-template.html`: replace the `DATA` object with the nodes, edges and timeline events you gathered, then present it as an HTML widget. The template provides the force layout, day slider, play button, synchronised timeline feed, tap-for-details and archived toggle.
+5. Render with a bundled template: replace the single shared data object with the nodes, edges and timeline events you gathered. The v1 template renders the graph and timeline. The v2 template merges the graph and the card design in one widget: a view toggle （グラフ／カード） and a tone toggle （標準／ダーク — a flat near-black briefing-card style) sit in the icon-only control bar (play ▶, ISO date, chat-count bubble + number, view and tone icon toggles — no text labels, so the bar reads in any language), and the choice persists in the widget state. The graph view provides the force layout, day slider, play button, synchronised timeline feed, tap-for-details and archived toggle; the card view (from the `chat_map_cards` skill) is the quiet grouped-cards rendering. The tone toggle changes colours only — never geometry — so switching never shifts the layout.
+   Optional linking (v2 only): set `vault` (Obsidian vault name) and `notesDir` on the data, a `node` id on timeline events, and a `note` path on any node whose summary note does not follow the default `notesDir/<birthday> <label>.md` pattern — linked timeline entries then point to the chat's summary note in Obsidian via `obsidian://open?vault=…&file=…` links (values URI-encoded, `/` as `%2F`). Caveats, verified in November 2026: these links only work when the rendered HTML is opened in a real browser. Inside Muse's own chat and widget surfaces, custom URL schemes such as `obsidian://` do not reach the OS (shown as `[blocked]` on macOS, inert on iOS), so the template detects embedding (inside an iframe, or with the widget bridge present) and renders the timeline as plain text there instead of presenting links that cannot work. The template file starts with `<meta charset="utf-8">`: the Muse shell supplies UTF-8 inside the widget, but a standalone copy served as a bare fragment has no other encoding declaration (plain static servers send `text/html` without a charset), and browsers then misread the Japanese text as a legacy encoding — mojibake. Keep that first line in every render.
 6. Offer the two follow-ups as options, without doing them unasked: export as Obsidian notes (one note per thread, wikilinks as edges, for the vault graph view), and refresh this map whenever threads are added.
 
 ## Does NOT do
@@ -34,4 +40,5 @@ Draw the user's conversation landscape as one map: every chat thread (a main cha
 
 ## Assets
 
-- `assets/chat-map-template.html` — the fused Graph × Historic Timeline widget (force graph + day slider + playback + event feed). Data is injected through the single `DATA` object at the top of its script.
+- `assets/chat-map-template.html` — v1: the original graph-only widget (force graph + day slider + playback + event feed). Data is injected through its single `DATA` object.
+- `assets/chat-map-template-v2.html` — v2: the unified widget (graph ⇄ card view toggle, 標準 ⇄ ダーク tone toggle, optional Obsidian links). Data is injected through the single `window.CM_DATA` object defined before the views' scripts (both views read it).
