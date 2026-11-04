@@ -4,6 +4,10 @@ An agent skill that draws your conversation landscape as one map.
 
 When an assistant conversation grows into a main chat plus many side chats, it gets hard to see the whole: which thread branched off from which, what was handed over where, and which thread a scheduled job delivers into. **chat-map** turns that into a single picture — every thread as a node, the relations between them as edges — fused with a historic timeline, so you can scrub or play back the days and watch the landscape grow.
 
+![chat-map v2 demo — the landscape grows day by day](docs/images/demo-en.gif)
+
+*Graph view with timeline playback: threads appear on the day they began. (Sample data.)*
+
 ## What it produces
 
 An interactive widget (force-directed graph + timeline) with:
@@ -34,9 +38,24 @@ It never invents a date or a relation, never posts into the threads it maps, and
 
 The v2 template unifies the graph and a grouped-cards view in one widget, adds a standard/dark tone toggle (colours only — the layout never shifts), and can optionally link timeline entries to Obsidian summary notes via `obsidian://` URIs. Those links only work when the HTML is opened in a real browser: inside Muse's own clients, custom URL schemes are blocked, and the template renders the timeline as plain text there instead. The v1 template remains available as the original graph-only version.
 
+<p>
+<img src="docs/images/graph-en.png" width="49%" alt="Graph view, standard tone">
+<img src="docs/images/graph-dark-en.png" width="49%" alt="Graph view, dark tone">
+</p>
+
+*Graph view in the standard and dark tones.*
+
+![Card view](docs/images/cards-en.png)
+
+*The same landscape as grouped cards.*
+
 ## 日本語
 
 チャットが Main と多数の Side chat に枝分かれし、引き継ぎや定期配信が絡むと全体像が見えなくなります。chat-map は、各スレッドをノード、関係（分岐／引継ぎ／定期配信／関連）をエッジとして一枚の地図にし、日付スライダーと再生で「いつ何が生まれたか」まで辿れるようにするエージェントスキルです。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
+
+![chat-map v2 デモ — 日ごとに育つ地図](docs/images/demo-ja.gif)
+
+*タイムライン再生つきのグラフ表示（サンプルデータ）。*
 
 ---
 
