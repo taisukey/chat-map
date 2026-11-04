@@ -49,6 +49,10 @@ The v2 template unifies the graph and a grouped-cards view in one widget, adds a
 
 *The same landscape as grouped cards.*
 
+![chat-map v2 demo — dark tone](docs/images/demo-dark-en.gif)
+
+*The dark tone, playing back.*
+
 ## FAQ
 
 **Is this an app?**
@@ -70,6 +74,10 @@ The skill uses the standard agent-skills format (`SKILL.md`), so other compatibl
 ![chat-map v2 デモ — 日ごとに育つ地図](docs/images/demo-ja.gif)
 
 *タイムライン再生つきのグラフ表示（サンプルデータ）。*
+
+![chat-map v2 デモ — ダーク](docs/images/demo-dark-ja.gif)
+
+*ダーク配色での再生。*
 
 ### よくある質問
 
