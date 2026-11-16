@@ -13,7 +13,7 @@
 ## New in v2.1
 
 - **Tree view** — a third view beside Graph and Cards: clusters as folders, chats as files. Collapse everything and open only what you need.
-- **Monochrome (***REMOVED***) tone** — a third tone beside Standard and Dark: grey structure, monospace type, and a single yellow highlight for the selected chat. Colours change, layout never moves.
+- **Monochrome (mono) tone** — a third tone beside Standard and Dark: grey structure, monospace type, and a single yellow highlight for the selected chat. Colours change, layout never moves.
 
 <details>
 <summary><b>What it produces</b></summary>
@@ -21,7 +21,7 @@
 - **Nodes** — one per chat thread, coloured by theme cluster, archived threads faded
 - **Edges** — four kinds: *branch* (a topic split off), *handover* (work or a skill was transferred), *recurring* (a scheduled job delivers there), *related* (same subject, no transfer)
 - **Three views** — force-directed graph with timeline playback, grouped cards, and a foldable tree
-- **Three tones** — standard, dark, and monochrome (***REMOVED***)
+- **Three tones** — standard, dark, and monochrome (mono)
 - **Details on tap** — each thread's role, its birthday, and its dated connections
 
 <p>
@@ -35,9 +35,9 @@
 
 *Tree view: clusters as folders, chats as files.*
 
-![Graph view, monochrome (***REMOVED***) tone](docs/images/graph-***REMOVED***-en.png)
+![Graph view, monochrome (mono) tone](docs/images/graph-mono-en.png)
 
-*The monochrome (***REMOVED***) tone.*
+*The monochrome (mono) tone.*
 
 </details>
 
@@ -56,7 +56,7 @@ Optional: timeline entries can link to Obsidian summary notes via `obsidian://` 
 <summary><b>Layout</b></summary>
 
 - `SKILL.md` — the skill itself
-- `assets/chat-map-template-v21.html` — the unified widget (graph / cards / tree × standard / dark / ***REMOVED***)
+- `assets/chat-map-template-v21.html` — the unified widget (graph / cards / tree × standard / dark / mono)
 - `assets/chat-map-template-v2.html` — the previous unified widget (graph / cards)
 - `assets/chat-map-template.html` — the original graph-only template (v1)
 
@@ -77,7 +77,7 @@ Optional: timeline entries can link to Obsidian summary notes via `obsidian://` 
 
 チャットが Main と多数の Side chat に枝分かれすると、全体像が見えなくなります。chat-map は各スレッドをノード、関係（分岐／引継ぎ／定期配信／関連）をエッジとして一枚の地図にし、日付スライダーと再生で「いつ何が生まれたか」まで辿れるエージェントスキルです。
 
-使い方は、Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけ。v2.1 では、クラスタをフォルダのように畳める **ツリー表示** と、モノクロ＋黄色ハイライトの *****REMOVED*** 色調** が加わります。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
+使い方は、Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけ。v2.1 では、クラスタをフォルダのように畳める **ツリー表示** と、モノクロ＋黄色ハイライトの **mono 色調** が加わります。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
 
 ---
 
