@@ -31,6 +31,14 @@
 
 ![Card view](docs/images/cards-en.png)
 
+![Tree view](docs/images/tree-en.png)
+
+*Tree view: clusters as folders, chats as files.*
+
+![Graph view, monochrome (***REMOVED***) tone](docs/images/graph-***REMOVED***-en.png)
+
+*The monochrome (***REMOVED***) tone.*
+
 </details>
 
 <details>
