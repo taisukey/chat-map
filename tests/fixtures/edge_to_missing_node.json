@@ -1,0 +1,6 @@
+{
+  "dates": ["2026-01-01"],
+  "nodes": [{"id": "main", "cluster": "hub", "day": 0, "label": "Main", "role": "Example"}],
+  "edges": [{"a": "main", "b": "missing", "t": "branch", "day": 0, "note": ""}],
+  "events": []
+}

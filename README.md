@@ -15,6 +15,8 @@
 - **Tree view** — a third view beside Graph and Cards: clusters as folders, chats as files. Collapse everything and open only what you need.
 - **Monochrome (mono) tone** — a third tone beside Standard and Dark: grey structure, monospace type, and a single yellow highlight for the selected chat. Colours change, layout never moves.
 
+Earlier versions and release notes: [Releases](https://github.com/taisukey/chat-map/releases) — v2.0 unified the graph and card views in one widget; v1 was the original graph-only map.
+
 <details>
 <summary><b>What it produces</b></summary>
 
@@ -59,6 +61,20 @@ Optional: timeline entries can link to Obsidian summary notes via `obsidian://` 
 - `assets/chat-map-template-v21.html` — the unified widget (graph / cards / tree × standard / dark / mono)
 - `assets/chat-map-template-v2.html` — the previous unified widget (graph / cards)
 - `assets/chat-map-template.html` — the original graph-only template (v1)
+- `tests/` — static checks for the templates and the `CM_DATA` contract (see below)
+
+</details>
+
+<details>
+<summary><b>Checks</b></summary>
+
+Static checks for the templates, the data contract and the README's links — Python 3 standard library only, no installs:
+
+```sh
+python3 tests/run_tests.py
+```
+
+The same validator can check an exported data file on its own: `python3 tests/run_tests.py --data <file.json>`. Rendering in a real browser is not covered; see `tests/README.md` for exactly what is and is not checked.
 
 </details>
 
@@ -78,6 +94,10 @@ Optional: timeline entries can link to Obsidian summary notes via `obsidian://` 
 チャットが Main と多数の Side chat に枝分かれすると、全体像が見えなくなります。chat-map は各スレッドをノード、関係（分岐／引継ぎ／定期配信／関連）をエッジとして一枚の地図にし、日付スライダーと再生で「いつ何が生まれたか」まで辿れるエージェントスキルです。
 
 使い方は、Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけ。v2.1 では、クラスタをフォルダのように畳める **ツリー表示** と、モノクロ＋黄色ハイライトの **mono 色調** が加わります。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
+
+![chat-map デモ — 日ごとに育っていく地図（日本語）](docs/images/demo-ja.gif)
+
+テンプレートとデータ形式の静的チェックは `python3 tests/run_tests.py` で実行できます（Python 3 の標準ライブラリのみ、追加インストール不要）。
 
 ---
 
