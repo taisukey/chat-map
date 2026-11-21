@@ -16,4 +16,7 @@ targets, SKILL.md frontmatter, and repository scrub terms.
 
 Static presence assertions cover the v2.1 `vaultIOS` helpers and their use
 in both note-URL builders, plus the `browserUrl` elements and controller wiring.
+They also cover the controller's `seenDay` and `lastNew` reads and writes,
+the NEW chip and count elements, the previous-batch panel and 前回 label,
+and the graph's SVG arrival marker.
 Browser rendering and visual layout remain out of scope.

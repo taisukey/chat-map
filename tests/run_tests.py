@@ -213,7 +213,7 @@ def check_note_vault(builder, helper):
     return f"{builder} uses {helper}"
 
 
-def check_browser_element(element):
+def check_v21_element(element):
     count = Markup(template("v2.1")).ids.count(element)
     require(count == 1, f"expected one element with ID {element}, found {count}")
     return "element found"
@@ -226,6 +226,39 @@ def check_browser_url():
                 for script in markup.scripts),
             "expected the controller to wire browserUrl to the link")
     return "controller wires browserUrl"
+
+
+def check_seen_day():
+    controller = next((script for script in Markup(template("v2.1")).scripts
+                       if "window.hatchWidget.getState" in script), "")
+    require(re.search(r"\bst\.seenDay\s*=\s*s\.seenDay\b", controller),
+            "expected the controller to read stored seenDay")
+    require(re.search(r"setState\(\{[^}]*\bseenDay:\s*st\.seenDay\b", controller),
+            "expected the controller to persist seenDay")
+    return "controller reads and persists seenDay"
+
+
+def check_new_marker():
+    require(any(re.search(r'createElementNS\(NS,\s*"polygon"\).*?'
+                          r'setAttribute\("class",\s*"cmx-newmark"\)',
+                          script, re.DOTALL)
+                for script in Markup(template("v2.1")).scripts),
+            "expected an SVG polygon with class cmx-newmark")
+    return "new arrival marker uses an SVG polygon"
+
+
+def check_previous_batch():
+    controller = next((script for script in Markup(template("v2.1")).scripts
+                       if "window.hatchWidget.getState" in script), "")
+    for field in ("lastNew", "lastSeen"):
+        require(re.search(rf"\bst\.{field}\s*=\s*s\.{field}\b", controller),
+                f"expected the controller to read stored {field}")
+        require(re.search(rf"setState\(\{{[^}}]*\b{field}:\s*st\.{field}\b", controller),
+                f"expected the controller to persist {field}")
+    require(re.search(r'newLabel\.textContent\s*=\s*previous\s*\?\s*"前回"\s*:\s*"NEW"',
+                      controller),
+            "expected the controller to switch the acknowledged chip label to 前回")
+    return "controller persists the last batch and switches its chip label"
 
 
 def read_json(path):
@@ -343,8 +376,13 @@ def main():
                 check("v2.1 graph note vault", check_note_vault, "noteURL", "vaultName")
                 check("v2.1 card note vault", check_note_vault, "noteURL2", "vaultName2")
                 for element in ("cmxBrowserSeg", "cmxBrowserBtn", "cmxHelpBrowser"):
-                    check(f"v2.1 {element}", check_browser_element, element)
+                    check(f"v2.1 {element}", check_v21_element, element)
                 check("v2.1 browserUrl", check_browser_url)
+                check("v2.1 seenDay", check_seen_day)
+                for element in ("cmxNewChip", "cmxNewCount", "cmxNewPanel"):
+                    check(f"v2.1 {element}", check_v21_element, element)
+                check("v2.1 previous batch", check_previous_batch)
+                check("v2.1 new arrival marker", check_new_marker)
             check(f"{version} sample CM_DATA", check_sample, version)
 
         for rule in ("duplicate_node_id", "edge_to_missing_node", "event_to_missing_node",
