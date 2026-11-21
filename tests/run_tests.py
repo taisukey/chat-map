@@ -19,7 +19,7 @@ TEMPLATES = {
 }
 CONTROLS = {
     "v2": ("cmxVGraph", "cmxVCards", "cmxTStd", "cmxTDark"),
-    "v2.1": ("cmxVGraph", "cmxVCards", "cmxVTree", "cmxTStd", "cmxTDark", "cmxTMono"),
+    "v2.1": ("cmxVGraph", "cmxVCards", "cmxVTree", "cmxToneBtn"),
 }
 
 
@@ -196,6 +196,15 @@ def check_control(version, control):
     return "button found"
 
 
+def check_tone_cycle():
+    controller = next((script for script in Markup(template("v2.1")).scripts
+                       if 'getElementById("cmxToneBtn")' in script), "")
+    require(re.search(r'\btoneOrder\s*=\s*\[\s*"std"\s*,\s*"dark"\s*,\s*"mono"\s*\]',
+                      controller),
+            "expected the controller to cycle in std, dark, mono order")
+    return "controller defines the std, dark, mono cycle"
+
+
 def check_vault_ios():
     markup = Markup(template("v2.1"))
     require(any(re.search(r"\bDATA\.vaultIOS\b", script) for script in markup.scripts),
@@ -217,6 +226,21 @@ def check_v21_element(element):
     count = Markup(template("v2.1")).ids.count(element)
     require(count == 1, f"expected one element with ID {element}, found {count}")
     return "element found"
+
+
+def check_search_jump(name):
+    definition = rf"window\.{name}\s*=\s*function\s*\(id\)"
+    require(any(re.search(definition, script)
+                for script in Markup(template("v2.1")).scripts),
+            f"expected a definition for {name}")
+    return "jump function defined"
+
+
+def check_card_node_id():
+    require(any(re.search(r'card\.setAttribute\("data-nid",\s*n\.id\)', script)
+                for script in Markup(template("v2.1")).scripts),
+            "expected cards to carry their node ID in data-nid")
+    return "cards carry data-nid"
 
 
 def check_browser_url():
@@ -372,6 +396,7 @@ def main():
             for control in CONTROLS.get(version, ()):
                 check(f"{version} {control}", check_control, version, control)
             if version == "v2.1":
+                check("v2.1 tone cycle", check_tone_cycle)
                 check("v2.1 vaultIOS", check_vault_ios)
                 check("v2.1 graph note vault", check_note_vault, "noteURL", "vaultName")
                 check("v2.1 card note vault", check_note_vault, "noteURL2", "vaultName2")
@@ -383,6 +408,12 @@ def main():
                     check(f"v2.1 {element}", check_v21_element, element)
                 check("v2.1 previous batch", check_previous_batch)
                 check("v2.1 new arrival marker", check_new_marker)
+                for element in ("cmxSearchBtn", "cmxSearchRow", "cmxSearchInput",
+                                "cmxSearchResults"):
+                    check(f"v2.1 {element}", check_v21_element, element)
+                for jump in ("CM_cardGo", "CM_treeGo"):
+                    check(f"v2.1 {jump}", check_search_jump, jump)
+                check("v2.1 card data-nid", check_card_node_id)
             check(f"{version} sample CM_DATA", check_sample, version)
 
         for rule in ("duplicate_node_id", "edge_to_missing_node", "event_to_missing_node",
