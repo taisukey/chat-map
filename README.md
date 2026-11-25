@@ -2,6 +2,8 @@
 
 **Your conversation landscape, as one map.** Every chat thread a node, every branch / handover / recurring delivery an edge — with a timeline you can play back day by day.
 
+**▶ Live demo: [taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — open it and touch it. No install, no sign-up.
+
 ![chat-map demo — the landscape grows day by day](docs/images/demo-en.gif)
 
 ## Use it
@@ -25,6 +27,16 @@ Use the current one: the skill renders with `assets/chat-map-template-v21.html`,
 
 - **v1** (`assets/chat-map-template.html`) — the original graph-only map. The lightest option if the landscape and the timeline are all you want.
 - **v2** (`assets/chat-map-template-v2.html`) — graph + cards, from before the tree view and the mono tone.
+
+## Put a network diagram on your own website
+
+The viewer underneath chat-map is a general one: give it nodes and edges as JSON, and it draws the network — graph, cards and tree. You do not have to be an engineer, and you do not need AI to use it.
+
+- A family tree, a team chart, the parts of a machine, the stops on a trip — if it can be drawn with circles and lines, it fits.
+- Copy one HTML file to your website, swap in your data, and the diagram is live. That is the whole recipe.
+- Nothing to install, nothing that tracks your visitors, and it keeps working offline.
+
+**For engineers:** zero dependencies, no build step, no framework. The renderer is plain SVG inside one self-contained HTML file, the data contract is a single JSON object, and the nodes stay in the DOM — searchable, styleable through CSS variables, and readable by screen readers in the card and tree views. Embed it in a static site, a server template, or a GitHub Pages folder as-is. The [live demo](https://taisukey.github.io/chat-map/) is this exact code, served from this repository's `docs/` folder.
 
 <details>
 <summary><b>What it produces</b></summary>
@@ -102,9 +114,21 @@ The same validator can check an exported data file on its own: `python3 tests/ru
 
 チャットが Main と多数の Side chat に枝分かれすると、全体像が見えなくなります。chat-map は各スレッドをノード、関係（分岐／引継ぎ／定期配信／関連）をエッジとして一枚の地図にし、日付スライダーと再生で「いつ何が生まれたか」まで辿れるエージェントスキルです。
 
+**▶ ライブデモ：[taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — 開いて触れます。インストールも登録もいりません。
+
 使い方は、Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけ。現行版 v2.2 では **検索** と **新着ハイライト** が加わり、v2.1 で加わったクラスタをフォルダのように畳める **ツリー表示** と、モノクロ＋黄色ハイライトの **mono 色調** も使えます。テンプレートは通常、現行版の `assets/chat-map-template-v21.html` を使います（グラフだけの軽い地図でよければ、初代 v1 のテンプレートも残してあります）。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
 
 ![chat-map デモ — 日ごとに育っていく地図（日本語）](docs/images/demo-ja.gif)
+
+### 自分のウェブサイトにも、ネットワーク図を
+
+chat-map の下にあるビューアは汎用のものです。ノードとエッジを JSON で渡せば、グラフ／カード／ツリーの3つの顔で描きます。エンジニアでなくても、AI がなくても使えます。
+
+- 家系図、チームの相関図、機械の部品表、旅の行程——丸と線で描けるものなら、何でも合います
+- HTML ファイルを1つ自分のサイトに置いて、データを差し替えるだけ。それで公開できます
+- インストール不要、訪問者を追跡する仕組みもなし、オフラインでも動きます
+
+エンジニア向けに言うと：依存ゼロ、ビルド工程なし、フレームワークなし。描画は単一ファイルの中の素の SVG、データ契約は JSON 1オブジェクトです。ノードは DOM に残るので検索でき、CSS 変数で色を変えられ、カードとツリー表示はスクリーンリーダーでも読めます。ライブデモは、このリポジトリの `docs/` から配信している、まさにこのコードです。
 
 テンプレートとデータ形式の静的チェックは `python3 tests/run_tests.py` で実行できます（Python 3 の標準ライブラリのみ、追加インストール不要）。
 
