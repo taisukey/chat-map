@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>chat-map — one JSON in, graph / cards / tree out</title>
+<style>
+:root{color-scheme:light dark;
+--color-gray:oklch(65% 0.01 286);
+--color-gray100:color-mix(in srgb, white 80%, var(--color-gray));
+--color-gray980:color-mix(in srgb, black 95%, var(--color-gray));
+--color-bg:light-dark(#f7f7f8,#151516);
+--color-fg:light-dark(var(--color-gray980),var(--color-gray100));
+--color-fg3:var(--color-gray);
+--color-line:color-mix(in srgb, var(--color-fg) 22%, transparent);
+--color-line-soft:color-mix(in srgb, var(--color-fg) 13%, transparent);
+--hl:#ffff00;
+--font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Monaco,"Cascadia Mono",Consolas,"Liberation Mono","Hiragino Kaku Gothic ProN",monospace}
+*{box-sizing:border-box}
+html{background-color:var(--color-bg);-webkit-font-smoothing:antialiased}
+::selection{background:var(--hl);color:#000}
+body{background-color:var(--color-bg);color:var(--color-fg);font-family:var(--font-mono);font-size:13px;line-height:22px;margin:0;padding:40px}
+a{color:inherit}
+a:hover{background:var(--hl);color:#000;text-decoration:none}
+:focus-visible{outline:2px solid var(--color-fg);outline-offset:2px}
+.col{max-width:640px}
+.muted{color:var(--color-fg3)}
+.lockup{display:flex;align-items:center;gap:16px}
+.lockup .mark{flex:none;color:var(--color-fg)}
+.lockup .mark svg{height:40px;width:auto;display:block}
+.lockup .word{font-weight:700;font-size:15px;letter-spacing:.06em;white-space:nowrap}
+h1{font-size:15px;margin:28px 0 6px}
+h2{font-size:13px;margin:30px 0 6px}
+p{margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.btn{display:inline-block;border:1px solid var(--color-fg);padding:6px 14px;text-decoration:none;margin:0 8px 8px 0}
+.btn:hover{background:var(--hl);color:#000;border-color:var(--hl)}
+.card{border:1px solid var(--color-line);padding:10px 14px;margin:0 0 10px}
+.card b{display:block}
+.card span{color:var(--color-fg3)}
+ul{padding-left:18px;margin:0 0 10px}
+footer{margin-top:44px;color:var(--color-fg3);border-top:1px solid var(--color-line-soft);padding-top:10px}
+</style>
+</head>
+<body>
+<div class="col">
+<div class="lockup"><span class="mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="291 201 99 86.5" aria-hidden="true" focusable="false"><defs><clipPath id="stcut-h"><rect x="270" y="190" width="150" height="95.02"/></clipPath></defs><g clip-path="url(#stcut-h)"><path fill-rule="nonzero" fill="currentColor" d="M 334.40625 270.980469 L 343.476562 270.980469 C 344.984375 277.402344 349.578125 282.621094 355.605469 285.019531 L 322.277344 285.019531 C 328.300781 282.621094 332.898438 277.402344 334.40625 270.980469 M 320.886719 266.375 C 320.886719 269.703125 318.191406 272.394531 314.867188 272.394531 C 311.542969 272.394531 308.847656 269.703125 308.847656 266.375 C 308.847656 263.050781 311.542969 260.355469 314.867188 260.355469 C 318.191406 260.355469 320.886719 263.050781 320.886719 266.375 M 300.660156 249.429688 C 299.726562 244.527344 300.664062 242.066406 302.910156 240.667969 C 303.792969 240.117188 304.828125 239.855469 306.035156 239.566406 C 306.105469 239.59375 306.203125 239.601562 306.339844 239.582031 L 329.96875 236.414062 C 330.410156 236.355469 330.996094 236.019531 331.273438 235.667969 L 338.53125 226.476562 C 338.808594 226.125 338.667969 225.839844 338.222656 225.839844 L 323.332031 225.839844 C 324.003906 224.882812 324.691406 223.90625 325.433594 222.917969 C 326.5625 221.402344 328.082031 220.492188 329.816406 220.488281 L 358.558594 220.488281 C 368.214844 220.523438 371.171875 226.96875 371.195312 237.328125 C 371.195312 240.214844 370.914062 243.34375 370.015625 247.554688 C 367.835938 246.746094 365.476562 246.300781 363.015625 246.300781 C 353.597656 246.300781 345.695312 252.789062 343.53125 261.542969 L 334.351562 261.542969 C 332.1875 252.789062 324.285156 246.300781 314.867188 246.300781 C 309.664062 246.300781 304.925781 248.277344 301.359375 251.523438 C 300.972656 250.4375 300.699219 249.628906 300.660156 249.429688 M 357 266.375 C 357 263.050781 359.691406 260.355469 363.015625 260.355469 C 366.339844 260.355469 369.035156 263.050781 369.035156 266.375 C 369.035156 269.703125 366.339844 272.394531 363.015625 272.394531 C 359.691406 272.394531 357 269.703125 357 266.375 M 370.433594 285.019531 C 377.84375 282.070312 383.09375 274.84375 383.09375 266.375 C 383.09375 260.851562 380.859375 255.847656 377.25 252.21875 C 378.128906 246.296875 378.488281 241.113281 378.488281 237.328125 C 378.507812 228.71875 376.554688 220.667969 370.808594 216.390625 C 371.277344 215.488281 371.898438 214.5625 372.648438 213.699219 C 373.976562 212.15625 375.6875 210.820312 377.546875 210.089844 C 378.21875 211.382812 379.460938 212.363281 381.007812 212.625 C 383.628906 213.074219 386.117188 211.316406 386.5625 208.695312 C 387.011719 206.074219 385.25 203.585938 382.628906 203.140625 C 380.011719 202.691406 377.523438 204.453125 377.074219 207.074219 C 376.996094 207.542969 376.988281 208.007812 377.042969 208.457031 C 374.808594 209.304688 372.859375 210.847656 371.355469 212.585938 C 370.566406 213.507812 369.898438 214.476562 369.371094 215.449219 C 366.863281 214.007812 363.746094 213.1875 359.894531 213.195312 L 331.851562 213.195312 C 321.890625 213.183594 318.296875 218.101562 314.457031 224.890625 C 312.269531 228.820312 307.359375 233.039062 303.855469 233.707031 C 297.574219 234.832031 293.371094 239.828125 293.359375 247.703125 C 293.359375 252.109375 294.722656 256.03125 296.125 259.175781 C 295.265625 261.410156 294.789062 263.835938 294.789062 266.375 C 294.789062 274.84375 300.035156 282.070312 307.449219 285.019531 L 244.023438 285.019531 L 244.023438 335.980469 L 416.726562 335.980469 L 416.726562 285.019531 Z M 370.433594 285.019531"/></g></svg>
+          </span>
+          <span class="word">STUDIO&nbsp;TICO <span class="cursor" aria-hidden="true">█</span></span></span><span class="word">STUDIO TICO</span></div>
+<p class="muted" style="margin-top:14px">An open-source tool from <a href="https://studiotico.com/">studiotico.com</a></p>
+<h1># chat-map</h1>
+<p>One JSON in — graph, cards and tree out.
+Zero dependencies, one HTML file.
+JSON を渡せば、グラフ／カード／ツリー。依存ゼロ、単一 HTML。</p>
+<p><a class="btn" href="examples/chat-en.html">Live demo (EN)</a><a class="btn" href="examples/chat-ja.html">Live demo (JA)</a><a class="btn" href="examples/">Examples</a></p>
+
+<h2>## What it is</h2>
+<p>A tiny viewer for relationship data — chats, parts, notes, anything with nodes and edges. Feed it one JSON object and it renders three reading views of the same data: an interactive graph (drag, timeline playback, search, new-arrival highlight), cards for scanning, and a collapsible tree for reading from a folded state.
+No build step, no CDN, no tracking. It runs from a single HTML file, even offline or from file://.</p>
+
+<h2>## Data shape</h2>
+<p>{ nodes: [{ id, label, cluster, day, role }], edges: [{ a, b, t, day }], events: [{ day, text }] }
+That is the whole contract. Clusters group nodes; day drives the timeline and the new-arrival highlight.</p>
+
+<h2>## Get it</h2>
+<ul>
+<li><a href="https://github.com/taisukey/chat-map">GitHub repository</a> — templates, tests and README</li>
+<li>Default template: assets/chat-map-template-v21.html — copy it, swap the data, done</li>
+<li>Made by <a href="https://studiotico.com/">Studio Tico</a></li>
+</ul>
+
+<footer>chat-map — a Studio Tico open-source tool · <a href="https://studiotico.com/">studiotico.com</a>
+No cookies, no tracking on this page either.</footer>
+</div>
+</body>
+</html>
