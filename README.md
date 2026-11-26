@@ -44,6 +44,8 @@ The viewer also ships on its own as **keifu** （系譜， "lineage"): [`keifu/k
 
 Since v0.2 the mount returns a handle for programmatic control — `select / focus / highlight / filter / expand / collapse / fit / setData` (positions of surviving nodes are kept) — with `onSelect / onHover / onDragEnd / onViewChange / onDayChange` callbacks, plus wheel / pinch zoom and background pan. The demo page drives all of it from buttons.
 
+v0.3 adds layouts: `setLayout("force" | "hierarchy" | "timeline")` — layered placement for DAGs (cycle edges are ignored for depth) and a day-column placement for lineages. The force layout uses Barnes–Hut repulsion above 50 nodes with close-range softening and alpha cooling, so dense graphs still come to rest: a 200-node / 360-edge layered DAG settles in about 8 seconds under a strict all-nodes-still criterion.
+
 <details>
 <summary><b>What it produces</b></summary>
 

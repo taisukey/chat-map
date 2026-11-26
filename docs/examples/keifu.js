@@ -5,7 +5,8 @@
    any other graph library is used or reproduced; public API names are
    generic functional terms (mount / select / focus / fit).
    Spec: ../COMPONENT-SPEC.md — Roadmap: ../KEIFU-ROADMAP.md
-     (Phase 1: programmatic control + viewport)
+     (Phase 1: programmatic control + viewport;
+      Phase 2: layouts force/hierarchy/timeline, Barnes-Hut for large n)
    Usage: keifu.mount(el, data, opts)
      data: {nodes:[{id,label,kind,group,day,meta,superseded}],
             edges:[{from,to,qty,label,type,day}],
@@ -13,9 +14,10 @@
             dates:[...] (optional labels for day indices)}
      opts: {strings:{...}, colors:{kindOrGroup: cssColor},
             onSelect(id), onHover(id|null), onDragEnd(id),
-            onViewChange(view), onDayChange(day), view:"graph"}
+            onViewChange(view), onDayChange(day), view:"graph",
+            layout:"force"|"hierarchy"|"timeline"}
    Returns a handle: {setData, select, focus, highlight, filter,
-                      expand, collapse, fit, destroy}.
+                      expand, collapse, fit, setLayout, destroy}.
 */
 (function (global) {
   "use strict";
@@ -82,7 +84,8 @@
       view: opts.view || "graph", day: Infinity, selected: null,
       timer: null, raf: null,
       vb: { x: 0, y: 0, w: W },
-      filterFn: null, collapsed: Object.create(null), highlightId: null
+      filterFn: null, collapsed: Object.create(null), highlightId: null,
+      layout: opts.layout || "force", alpha: 1
     };
     var N = [], E = [], byId = Object.create(null), days = [];
     var colorCache = Object.create(null);
@@ -131,7 +134,9 @@
         if (old) { c.x = old.x; c.y = old.y; c.vx = old.vx; c.vy = old.vy; }
         else {
           var ang = (i / Math.max(1, data.nodes.length)) * Math.PI * 2;
-          c.x = W / 2 + Math.cos(ang) * 150; c.y = H / 2 + Math.sin(ang) * 110;
+          var rx = Math.min(270, 90 + data.nodes.length * 4);
+          var ry = Math.min(180, 60 + data.nodes.length * 2.7);
+          c.x = W / 2 + Math.cos(ang) * rx; c.y = H / 2 + Math.sin(ang) * ry;
           c.vx = 0; c.vy = 0;
         }
         c.drag = false;
@@ -143,6 +148,7 @@
       N.concat(E).forEach(function (x) { ds[dayOf(x)] = 1; });
       (data.events || []).forEach(function (ev) { ds[ev.day || 0] = 1; });
       days = Object.keys(ds).map(Number).sort(function (a, b) { return a - b; });
+      state.alpha = 1;
       if (state.selected && !byId[state.selected]) state.selected = null;
       if (state.highlightId && !byId[state.highlightId]) state.highlightId = null;
       Object.keys(state.collapsed).forEach(function (k) { if (!byId[k]) delete state.collapsed[k]; });
@@ -274,6 +280,50 @@
       svg.addEventListener("pointercancel", endPointer);
     }
 
+    function computeLayout(vis) {
+      var i, n;
+      if (state.layout === "hierarchy") {
+        var memo = Object.create(null);
+        function depth(id, visiting) {
+          if (memo[id] != null) return memo[id];
+          if (visiting[id]) return -1;
+          visiting[id] = 1;
+          var d = 0;
+          parentsOf(id).forEach(function (e) {
+            if (!byId[e.from] || !visNode(byId[e.from])) return;
+            var pd = depth(e.from, visiting);
+            if (pd >= 0) d = Math.max(d, pd + 1);
+          });
+          delete visiting[id];
+          memo[id] = d; return d;
+        }
+        var levels = Object.create(null), maxD = 0;
+        vis.forEach(function (nd) { var d = depth(nd.id, Object.create(null)); maxD = Math.max(maxD, d); (levels[d] = levels[d] || []).push(nd); });
+        Object.keys(levels).forEach(function (dk) {
+          var lv = levels[dk];
+          lv.sort(function (a, b) { return a.label < b.label ? -1 : (a.label > b.label ? 1 : 0); });
+          var rowH = maxD > 0 ? Math.min(120, (H - 110) / maxD) : 0;
+          lv.forEach(function (nd, j) {
+            nd.x = (j + 0.5) * W / lv.length;
+            nd.y = maxD > 0 ? 56 + Number(dk) * rowH : H / 2;
+            nd.vx = 0; nd.vy = 0;
+          });
+        });
+      } else if (state.layout === "timeline") {
+        var byDay = Object.create(null);
+        vis.forEach(function (nd) { (byDay[dayOf(nd)] = byDay[dayOf(nd)] || []).push(nd); });
+        Object.keys(byDay).forEach(function (dk) {
+          var idx = days.indexOf(Number(dk));
+          var x = days.length <= 1 ? W / 2 : 64 + (idx < 0 ? 0 : idx) * (W - 128) / (days.length - 1);
+          var col = byDay[dk];
+          col.forEach(function (nd, j) {
+            nd.x = x; nd.y = (j + 0.5) * H / col.length;
+            nd.vx = 0; nd.vy = 0;
+          });
+        });
+      }
+    }
+
     var edgeEls = [], nodeEls = [];
     function renderGraph() {
       body.innerHTML = "";
@@ -316,7 +366,9 @@
       body.appendChild(svg);
       attachViewport(svg);
       applyView();
-      applyDim(); draw(); kick();
+      applyDim();
+      if (state.layout === "force") { draw(); kick(); }
+      else { computeLayout(N.filter(visNode)); draw(); }
     }
     function draw() {
       edgeEls.forEach(function (e) {
@@ -329,18 +381,77 @@
         o.t.setAttribute("x", o.n.x); o.t.setAttribute("y", o.n.y + Number(o.c.getAttribute("r")) + 13);
       });
     }
+    function bhRepulsion(vis) {
+      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      vis.forEach(function (n) {
+        minX = Math.min(minX, n.x); minY = Math.min(minY, n.y);
+        maxX = Math.max(maxX, n.x); maxY = Math.max(maxY, n.y);
+      });
+      var size = Math.max(maxX - minX, maxY - minY, 10) + 20;
+      function cell(x, y, sz) { return { x: x, y: y, s: sz, mass: 0, cx: 0, cy: 0, body: null, bodies: null, kids: null }; }
+      var rootC = cell(minX - 10, minY - 10, size);
+      function accum(c, n) {
+        c.cx = (c.cx * c.mass + n.x) / (c.mass + 1);
+        c.cy = (c.cy * c.mass + n.y) / (c.mass + 1);
+        c.mass++;
+      }
+      function insertInto(c, n) {
+        var mx = c.x + c.s / 2, my = c.y + c.s / 2;
+        var q = (n.x >= mx ? 1 : 0) + (n.y >= my ? 2 : 0);
+        if (!c.kids[q]) c.kids[q] = cell(q % 2 ? mx : c.x, q >= 2 ? my : c.y, c.s / 2);
+        insert(c.kids[q], n);
+      }
+      function insert(c, n) {
+        if (c.kids) { insertInto(c, n); accum(c, n); return; }
+        if (c.bodies) { c.bodies.push(n); accum(c, n); return; }
+        if (c.mass === 0) { c.body = n; accum(c, n); return; }
+        if (c.body === n) { accum(c, n); return; }
+        if (c.s <= 1) { c.bodies = [c.body, n]; c.body = null; accum(c, n); return; }
+        c.kids = [null, null, null, null];
+        var old = c.body; c.body = null;
+        insertInto(c, old);
+        insertInto(c, n);
+        accum(c, n);
+      }
+      vis.forEach(function (n) { insert(rootC, n); });
+      function pair(n, ox, oy, m) {
+        var dx = n.x - ox, dy = n.y - oy;
+        var d2 = dx * dx + dy * dy || 1, d = Math.sqrt(d2);
+        var f = 3800 * m / (d2 + 50);
+        n.vx += dx / d * f; n.vy += dy / d * f;
+      }
+      function apply(c, n) {
+        if (!c || c.mass === 0) return;
+        if (c.bodies) {
+          c.bodies.forEach(function (o) { if (o !== n) pair(n, o.x, o.y, 1); });
+          return;
+        }
+        if (!c.kids) { if (c.body && c.body !== n) pair(n, c.body.x, c.body.y, 1); return; }
+        var dx = n.x - c.cx, dy = n.y - c.cy;
+        var d2 = dx * dx + dy * dy || 1, d = Math.sqrt(d2);
+        var containsSelf = n.x >= c.x && n.x < c.x + c.s && n.y >= c.y && n.y < c.y + c.s;
+        if (c.s / d < 0.85 && !containsSelf) { pair(n, c.cx, c.cy, c.mass); return; }
+        for (var i = 0; i < 4; i++) apply(c.kids[i], n);
+      }
+      vis.forEach(function (n) { apply(rootC, n); });
+    }
     function tick() {
+      if (state.layout !== "force") { state.raf = null; return; }
       var i, j, a, b, dx, dy, d2, f, d;
       var vis = N.filter(visNode);
-      for (i = 0; i < vis.length; i++) {
-        a = vis[i];
-        for (j = i + 1; j < vis.length; j++) {
-          b = vis[j];
-          dx = a.x - b.x; dy = a.y - b.y;
-          d2 = dx * dx + dy * dy || 1;
-          f = 3800 / d2; d = Math.sqrt(d2);
-          a.vx += dx / d * f; a.vy += dy / d * f;
-          b.vx -= dx / d * f; b.vy -= dy / d * f;
+      if (vis.length > 50) {
+        bhRepulsion(vis);
+      } else {
+        for (i = 0; i < vis.length; i++) {
+          a = vis[i];
+          for (j = i + 1; j < vis.length; j++) {
+            b = vis[j];
+            dx = a.x - b.x; dy = a.y - b.y;
+            d2 = dx * dx + dy * dy || 1;
+            f = 3800 / (d2 + 50); d = Math.sqrt(d2);
+            a.vx += dx / d * f; a.vy += dy / d * f;
+            b.vx -= dx / d * f; b.vy -= dy / d * f;
+          }
         }
       }
       E.forEach(function (e) {
@@ -357,26 +468,28 @@
         n.vx += (W / 2 - n.x) * 0.0022;
         n.vy += (H / 2 - n.y) * 0.0022;
       });
-      var maxv = 0;
+      state.alpha *= 0.985;
+      var maxv = 0, al = state.alpha;
       vis.forEach(function (n) {
         if (n.drag) { n.vx = 0; n.vy = 0; return; }
         n.vx *= 0.86; n.vy *= 0.86;
         if (Math.abs(n.vx) < 0.02) n.vx = 0;
         if (Math.abs(n.vy) < 0.02) n.vy = 0;
-        n.x += n.vx; n.y += n.vy;
+        n.x += n.vx * al; n.y += n.vy * al;
         if (n.x < 46) { n.x = 46; n.vx = 0; } else if (n.x > W - 46) { n.x = W - 46; n.vx = 0; }
         if (n.y < 18) { n.y = 18; n.vy = 0; } else if (n.y > H - 26) { n.y = H - 26; n.vy = 0; }
-        maxv = Math.max(maxv, Math.abs(n.vx) + Math.abs(n.vy));
+        maxv = Math.max(maxv, (Math.abs(n.vx) + Math.abs(n.vy)) * al);
       });
       draw();
-      if (maxv > 0.03) { state.raf = requestAnimationFrame(tick); }
+      if (maxv > 0.03 && al > 0.015) { state.raf = requestAnimationFrame(tick); }
       else { state.raf = null; }
     }
-    function kick() { if (!state.raf && state.view === "graph") state.raf = requestAnimationFrame(tick); }
+    function kick() { if (!state.raf && state.view === "graph" && state.layout === "force") state.raf = requestAnimationFrame(tick); }
     function attachDrag(g, n, svg) {
       var moved = 0, sx = 0, sy = 0;
       g.addEventListener("pointerdown", function (e) {
         e.stopPropagation();
+        state.alpha = Math.max(state.alpha, 0.6);
         n.drag = true; moved = 0; sx = e.clientX; sy = e.clientY;
         if (g.setPointerCapture) try { g.setPointerCapture(e.pointerId); } catch (err) {}
         kick();
@@ -553,9 +666,14 @@
       expand: function (id) { delete state.collapsed[id]; renderBody(); },
       collapse: function (id) { state.collapsed[id] = 1; renderBody(); },
       fit: function () { fit(); },
+      setLayout: function (name) {
+        if (["force", "hierarchy", "timeline"].indexOf(name) < 0) return;
+        state.layout = name;
+        if (state.view === "graph") renderBody();
+      },
       destroy: function () { stopPlay(); if (state.raf) cancelAnimationFrame(state.raf); root.remove(); }
     };
   }
 
-  global.keifu = { mount: mount, version: "0.2.0" };
+  global.keifu = { mount: mount, version: "0.3.0" };
 })(typeof window !== "undefined" ? window : this);

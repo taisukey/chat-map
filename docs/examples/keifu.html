@@ -44,6 +44,9 @@ button{font:inherit;padding:4px 10px;border:1px solid var(--color-line);border-r
 <button id="bUnfilter">filter(null)</button>
 <button id="bCollapse">collapse(ENG-000)</button>
 <button id="bExpand">expand(ENG-000)</button>
+<button id="bLayF">layout: force</button>
+<button id="bLayH">layout: hierarchy</button>
+<button id="bLayT">layout: timeline</button>
 </p>
 <p class="muted" id="log">events: —</p>
 <div class="box" id="bom"></div>
@@ -92,6 +95,9 @@ document.getElementById("bFilter").onclick = function () { bom.filter(function (
 document.getElementById("bUnfilter").onclick = function () { bom.filter(null); };
 document.getElementById("bCollapse").onclick = function () { bom.collapse("eng"); };
 document.getElementById("bExpand").onclick = function () { bom.expand("eng"); };
+document.getElementById("bLayF").onclick = function () { bom.setLayout("force"); };
+document.getElementById("bLayH").onclick = function () { bom.setLayout("hierarchy"); };
+document.getElementById("bLayT").onclick = function () { bom.setLayout("timeline"); };
 keifu.mount(document.getElementById("lin"), {
   nodes: [
     {id:"v1", label:"Draft A", kind:"design", group:"design", day:0},
