@@ -6,7 +6,8 @@
    generic functional terms (mount / select / focus / fit).
    Spec: ../COMPONENT-SPEC.md — Roadmap: ../KEIFU-ROADMAP.md
      (Phase 1: programmatic control + viewport;
-      Phase 2: layouts force/hierarchy/timeline, Barnes-Hut for large n)
+      Phase 2: layouts force/hierarchy/timeline, Barnes-Hut for large n;
+      Phase 3: renderNode/renderDetail hooks, nodeStyle dict, tone presets)
    Usage: keifu.mount(el, data, opts)
      data: {nodes:[{id,label,kind,group,day,meta,superseded}],
             edges:[{from,to,qty,label,type,day}],
@@ -15,9 +16,13 @@
      opts: {strings:{...}, colors:{kindOrGroup: cssColor},
             onSelect(id), onHover(id|null), onDragEnd(id),
             onViewChange(view), onDayChange(day), view:"graph",
-            layout:"force"|"hierarchy"|"timeline"}
+            layout:"force"|"hierarchy"|"timeline",
+            tone:"std"|"dark"|"mono",
+            nodeStyle:{kindOrGroup:{color,radius,shape}},
+            renderNode(node,{color,radius,svgNS}) -> SVGElement,
+            renderDetail(node,{children,parents}) -> string|Element}
    Returns a handle: {setData, select, focus, highlight, filter,
-                      expand, collapse, fit, setLayout, destroy}.
+                      expand, collapse, fit, setLayout, setTone, destroy}.
 */
 (function (global) {
   "use strict";
@@ -43,11 +48,11 @@
       ".kf-edge{stroke:var(--kf-edge,#999);stroke-width:1.2}",
       ".kf-edge.derive{stroke-dasharray:5 4}",
       ".kf-node{cursor:pointer}",
-      ".kf-node circle{stroke:#fff;stroke-width:1.5}",
+      ".kf-node .kf-dot{stroke:#fff;stroke-width:1.5}",
       ".kf-node text{fill:var(--kf-fg,inherit);font-size:11px;text-anchor:middle;pointer-events:none}",
       ".kf-node.dim,.kf-edge.dim{opacity:.15}",
       ".kf-node.ghost{opacity:.35}",
-      ".kf-node.ghost circle{stroke-dasharray:3 3}",
+      ".kf-node.ghost .kf-dot{stroke-dasharray:3 3}",
       ".kf-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}",
       ".kf-card{border:1px solid var(--kf-border,#8886);border-radius:10px;padding:8px 10px;cursor:pointer;text-align:left;background:transparent;color:inherit;font:inherit}",
       ".kf-card b{display:block;font-size:13px}",
@@ -64,7 +69,9 @@
       ".kf-events{margin-top:8px;font-size:12px}",
       ".kf-events div{padding:2px 0}",
       ".kf-events b{margin-right:8px}",
-      ".kf input[type=range]{flex:1;min-width:120px}"
+      ".kf input[type=range]{flex:1;min-width:120px}",
+      ".kf[data-tone='dark']{--kf-fg:#eee;--kf-muted:#9a9a9a;--kf-border:#5558;--kf-edge:#8a8a8a;--kf-accent:#6ea8fe;--kf-on-accent:#06121f}",
+      ".kf[data-tone='mono']{--kf-muted:#8a8a8a;--kf-accent:#d9b400}"
     ].join("\n");
     document.head.appendChild(s);
   }
@@ -77,6 +84,7 @@
     var S = Object.assign({}, DEFAULT_STRINGS, opts.strings || {});
     var root = document.createElement("div");
     root.className = "kf";
+    root.dataset.tone = opts.tone || "std";
     el.appendChild(root);
 
     var W = 640, H = 420;
@@ -85,17 +93,42 @@
       timer: null, raf: null,
       vb: { x: 0, y: 0, w: W },
       filterFn: null, collapsed: Object.create(null), highlightId: null,
-      layout: opts.layout || "force", alpha: 1
+      layout: opts.layout || "force", alpha: 1, tone: opts.tone || "std"
     };
     var N = [], E = [], byId = Object.create(null), days = [];
     var colorCache = Object.create(null);
     var svgEl = null;
 
+    var GRAY_RAMP = ["#bbbbbb", "#999999", "#777777", "#555555", "#cccccc", "#888888"];
+    function own(obj, key) {
+      return obj && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
+    }
+    /* nodeStyle resolves per property: kind -> group -> default */
+    function styleProp(n, prop) {
+      if (!opts.nodeStyle) return undefined;
+      var v = own(own(opts.nodeStyle, n.kind), prop);
+      if (v !== undefined) return v;
+      v = own(own(opts.nodeStyle, n.group), prop);
+      if (v !== undefined) return v;
+      return own(own(opts.nodeStyle, "default"), prop);
+    }
     function colorOf(n) {
       var key = n.group || n.kind || "";
-      if (opts.colors && opts.colors[key]) return opts.colors[key];
-      if (!colorCache[key]) colorCache[key] = PALETTE[Object.keys(colorCache).length % PALETTE.length];
+      var sc = styleProp(n, "color");
+      if (sc) return sc;
+      var oc = own(opts.colors, key);
+      if (oc) return oc;
+      if (!colorCache[key]) {
+        var idx = Object.keys(colorCache).length;
+        colorCache[key] = state.tone === "mono" ? GRAY_RAMP[idx % GRAY_RAMP.length] : PALETTE[idx % PALETTE.length];
+      }
       return colorCache[key];
+    }
+    function radiusOf(n) {
+      var sr = styleProp(n, "radius");
+      if (sr != null) return sr;
+      var deg = childrenOf(n.id).length + parentsOf(n.id).length;
+      return 12 + Math.min(8, deg * 1.2);
     }
     function childrenOf(id) { return E.filter(function (e) { return e.from === id; }); }
     function parentsOf(id) { return E.filter(function (e) { return e.to === id; }); }
@@ -350,15 +383,35 @@
         if (!visNode(n)) return;
         var g = document.createElementNS(NS, "g");
         g.setAttribute("class", "kf-node" + (n.superseded ? " ghost" : ""));
-        var c = document.createElementNS(NS, "circle");
-        var deg = childrenOf(n.id).length + parentsOf(n.id).length;
-        c.setAttribute("r", 12 + Math.min(8, deg * 1.2));
-        c.setAttribute("fill", colorOf(n));
-        var t = document.createElementNS(NS, "text");
-        t.textContent = n.label;
-        g.appendChild(c); g.appendChild(t);
+        var r = radiusOf(n), inner = null;
+        if (opts.renderNode) {
+          try { inner = opts.renderNode(n, { color: colorOf(n), radius: r, svgNS: NS }); } catch (err) { inner = null; }
+        }
+        if (inner) {
+          g.appendChild(inner);
+        } else {
+          var shapeKind = styleProp(n, "shape"), shape;
+          if (shapeKind === "rect") {
+            shape = document.createElementNS(NS, "rect");
+            shape.setAttribute("x", -r); shape.setAttribute("y", -r * 0.72);
+            shape.setAttribute("width", r * 2); shape.setAttribute("height", r * 1.44);
+            shape.setAttribute("rx", 4);
+          } else if (shapeKind === "diamond") {
+            shape = document.createElementNS(NS, "polygon");
+            shape.setAttribute("points", "0," + (-r) + " " + r + ",0 0," + r + " " + (-r) + ",0");
+          } else {
+            shape = document.createElementNS(NS, "circle");
+            shape.setAttribute("r", r);
+          }
+          shape.setAttribute("fill", colorOf(n));
+          shape.setAttribute("class", "kf-dot");
+          var t = document.createElementNS(NS, "text");
+          t.textContent = n.label;
+          t.setAttribute("y", r + 13);
+          g.appendChild(shape); g.appendChild(t);
+        }
         svg.appendChild(g);
-        nodeEls.push({ el: g, c: c, t: t, n: n });
+        nodeEls.push({ el: g, n: n });
         attachDrag(g, n, svg);
         g.addEventListener("pointerenter", function () { if (opts.onHover) opts.onHover(n.id); });
         g.addEventListener("pointerleave", function () { if (opts.onHover) opts.onHover(null); });
@@ -377,8 +430,7 @@
         if (e.label) { e.label.setAttribute("x", (e.a.x + e.b.x) / 2); e.label.setAttribute("y", (e.a.y + e.b.y) / 2 - 4); }
       });
       nodeEls.forEach(function (o) {
-        o.c.setAttribute("cx", o.n.x); o.c.setAttribute("cy", o.n.y);
-        o.t.setAttribute("x", o.n.x); o.t.setAttribute("y", o.n.y + Number(o.c.getAttribute("r")) + 13);
+        o.el.setAttribute("transform", "translate(" + o.n.x + "," + o.n.y + ")");
       });
     }
     function bhRepulsion(vis) {
@@ -591,6 +643,16 @@
     function renderDetail() {
       var n = state.selected ? byId[state.selected] : null;
       if (!n) { detail.innerHTML = ""; return; }
+      if (opts.renderDetail) {
+        var derived = {
+          children: childrenOf(n.id).map(function (e) { return { node: byId[e.to], qty: e.qty, edge: e }; }),
+          parents: parentsOf(n.id).map(function (e) { return { node: byId[e.from], qty: e.qty, edge: e }; })
+        };
+        var out = null;
+        try { out = opts.renderDetail(n, derived); } catch (err) { out = null; }
+        if (typeof out === "string") { detail.innerHTML = out; return; }
+        if (out && out.nodeType) { detail.innerHTML = ""; detail.appendChild(out); return; }
+      }
       var kids = childrenOf(n.id), pars = parentsOf(n.id);
       var h = "<div class='kf-detail'><h4>" + esc(n.label) + "</h4>";
       h += "<div>" + esc(n.kind || "") + (n.meta && n.meta.role ? " — " + esc(n.meta.role) : "") + "</div>";
@@ -666,6 +728,13 @@
       expand: function (id) { delete state.collapsed[id]; renderBody(); },
       collapse: function (id) { state.collapsed[id] = 1; renderBody(); },
       fit: function () { fit(); },
+      setTone: function (name) {
+        if (["std", "dark", "mono"].indexOf(name) < 0) return;
+        state.tone = name;
+        root.dataset.tone = name;
+        colorCache = Object.create(null);
+        renderBody();
+      },
       setLayout: function (name) {
         if (["force", "hierarchy", "timeline"].indexOf(name) < 0) return;
         state.layout = name;
@@ -675,5 +744,5 @@
     };
   }
 
-  global.keifu = { mount: mount, version: "0.3.0" };
+  global.keifu = { mount: mount, version: "0.4.0" };
 })(typeof window !== "undefined" ? window : this);

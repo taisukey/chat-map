@@ -55,6 +55,15 @@ button{font:inherit;padding:4px 10px;border:1px solid var(--color-line);border-r
 <h2>## A lineage (derive edges, a superseded draft, playback)</h2>
 <div class="box" id="lin"></div>
 
+<h2>## Custom rendering (renderNode / renderDetail) and tones</h2>
+<p class="muted">This third mount draws each node with <b>renderNode</b> (an image badge + label) and replaces the detail panel with <b>renderDetail</b> — click a node. Tone presets are built in:</p>
+<p>
+<button id="bToneStd">tone: std</button>
+<button id="bToneDark">tone: dark</button>
+<button id="bToneMono">tone: mono</button>
+</p>
+<div class="box" id="custom"></div>
+
 <p class="muted">← <a href="./">Examples</a> · <a href="../">chat-map</a> · <a href="https://studiotico.com">studiotico.com</a></p>
 </div>
 <script src="keifu.js"></script>
@@ -117,6 +126,43 @@ keifu.mount(document.getElementById("lin"), {
     {day:2, text:"Converged on the final"}
   ]
 }, {});
+</script>
+<script>
+var custom = keifu.mount(document.getElementById("custom"), {
+  nodes: [
+    {id:"proj", label:"Project", kind:"root", group:"bom", day:0, meta:{role:"Project root"}},
+    {id:"eng", label:"ENG-000", kind:"assembly", group:"bom", day:0, meta:{role:"Engine assembly"}},
+    {id:"pst", label:"PST-201", kind:"part", group:"bom", day:1, meta:{role:"Piston"}},
+    {id:"clip", label:"Circlip", kind:"part", group:"bom", day:2, meta:{role:"Shared fastener"}}
+  ],
+  edges: [
+    {from:"proj", to:"eng", qty:1, day:0},
+    {from:"eng", to:"pst", qty:1, day:1},
+    {from:"pst", to:"clip", qty:2, day:2}
+  ]
+}, {
+  renderNode: function (n, h) {
+    var g = document.createElementNS(h.svgNS, "g");
+    var img = document.createElementNS(h.svgNS, "image");
+    var uri = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="10" fill="' + h.color + '"/><text x="12" y="16" font-size="11" text-anchor="middle" fill="#fff" font-family="monospace">' + n.label.charAt(0) + "</text></svg>");
+    img.setAttribute("href", uri);
+    img.setAttribute("x", -12); img.setAttribute("y", -12);
+    img.setAttribute("width", 24); img.setAttribute("height", 24);
+    g.appendChild(img);
+    var t = document.createElementNS(h.svgNS, "text");
+    t.textContent = n.label;
+    t.setAttribute("y", 26); t.setAttribute("text-anchor", "middle"); t.setAttribute("font-size", "11");
+    g.appendChild(t);
+    return g;
+  },
+  renderDetail: function (n, d) {
+    return "<div class='kf-detail'><h4>" + n.label + " (custom detail)</h4><div>" +
+      d.children.length + " children / " + d.parents.length + " parents — rendered by renderDetail</div></div>";
+  }
+});
+document.getElementById("bToneStd").onclick = function () { custom.setTone("std"); };
+document.getElementById("bToneDark").onclick = function () { custom.setTone("dark"); };
+document.getElementById("bToneMono").onclick = function () { custom.setTone("mono"); };
 </script>
 </body>
 </html>

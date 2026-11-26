@@ -46,6 +46,8 @@ Since v0.2 the mount returns a handle for programmatic control — `select / foc
 
 v0.3 adds layouts: `setLayout("force" | "hierarchy" | "timeline")` — layered placement for DAGs (cycle edges are ignored for depth) and a day-column placement for lineages. The force layout uses Barnes–Hut repulsion above 50 nodes with close-range softening and alpha cooling, so dense graphs still come to rest: a 200-node / 360-edge layered DAG settles in about 8 seconds under a strict all-nodes-still criterion.
 
+v0.4 opens the rendering: `renderNode(node, {color, radius, svgNS})` draws nodes your way (images, badges, bars), `renderDetail(node, {children, parents})` replaces the detail panel, a per-property `nodeStyle` dictionary resolves color / radius / shape by kind → group → default, and tone presets (`std` / `dark` / `mono`) ship built in via `setTone`.
+
 <details>
 <summary><b>What it produces</b></summary>
 
