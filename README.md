@@ -42,6 +42,8 @@ The viewer underneath chat-map is a general one: give it nodes and edges as JSON
 
 The viewer also ships on its own as **keifu** （系譜， "lineage"): [`keifu/keifu.js`](keifu/keifu.js), a single zero-dependency file. Call `keifu.mount(el, data, opts)` with nodes and edges as JSON and you get the graph / cards / tree views, a detail panel whose composition and where-used lists are derived from the edges, and — when your data carries days — a lineage timeline with playback, derive edges and ghost display for superseded nodes. Live: [the keifu demo](https://taisukey.github.io/chat-map/examples/keifu.html) draws a bill of materials and a design lineage with nothing but that file.
 
+Since v0.2 the mount returns a handle for programmatic control — `select / focus / highlight / filter / expand / collapse / fit / setData` (positions of surviving nodes are kept) — with `onSelect / onHover / onDragEnd / onViewChange / onDayChange` callbacks, plus wheel / pinch zoom and background pan. The demo page drives all of it from buttons.
+
 <details>
 <summary><b>What it produces</b></summary>
 

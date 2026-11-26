@@ -27,6 +27,7 @@ a:hover{background:var(--hl);color:#000;text-decoration:none}
 h1{font-size:16px;font-weight:600;margin:0 0 6px}
 h2{font-size:13px;font-weight:600;margin:22px 0 4px}
 .kf{--kf-border:var(--color-line);--kf-muted:var(--color-fg3)}
+button{font:inherit;padding:4px 10px;border:1px solid var(--color-line);border-radius:999px;background:transparent;color:inherit;cursor:pointer;margin:0 4px 6px 0}
 </style>
 </head>
 <body>
@@ -35,7 +36,18 @@ h2{font-size:13px;font-weight:600;margin:22px 0 4px}
 <p class="muted">The two mounts below are drawn by <b>keifu.js</b> alone — the component extracted from chat-map. One script tag, one JSON object each. No build, no dependencies. Source: <a href="https://github.com/taisukey/chat-map/blob/main/keifu/keifu.js">keifu/keifu.js</a> in the repository (this page loads a copy of the same file).</p>
 
 <h2>## A bill of materials (DAG, quantities, a shared part)</h2>
+<p class="muted">v0.2 adds a programmatic API. Drive it from outside:</p>
+<p>
+<button id="bFocus">focus(Circlip)</button>
+<button id="bFit">fit()</button>
+<button id="bFilter">filter(parts only)</button>
+<button id="bUnfilter">filter(null)</button>
+<button id="bCollapse">collapse(ENG-000)</button>
+<button id="bExpand">expand(ENG-000)</button>
+</p>
+<p class="muted" id="log">events: —</p>
 <div class="box" id="bom"></div>
+<p class="muted">Wheel zooms, dragging the background pans, hovering a node fires onHover, ending a drag fires onDragEnd.</p>
 
 <h2>## A lineage (derive edges, a superseded draft, playback)</h2>
 <div class="box" id="lin"></div>
@@ -44,7 +56,9 @@ h2{font-size:13px;font-weight:600;margin:22px 0 4px}
 </div>
 <script src="keifu.js"></script>
 <script>
-keifu.mount(document.getElementById("bom"), {
+var logEl = document.getElementById("log");
+function log(m) { logEl.textContent = "events: " + m; }
+var bom = keifu.mount(document.getElementById("bom"), {
   nodes: [
     {id:"proj", label:"Project", kind:"root", group:"bom", day:0, meta:{role:"Project root"}},
     {id:"eng", label:"ENG-000", kind:"assembly", group:"bom", day:0, meta:{role:"Engine assembly"}},
@@ -65,7 +79,19 @@ keifu.mount(document.getElementById("bom"), {
     {day:1, text:"Prototype — components are added and revised"},
     {day:2, text:"Verification — quantities are checked and adopted"}
   ]
-}, {});
+}, {
+  onSelect: function (id) { log("onSelect " + id); },
+  onHover: function (id) { if (id) log("onHover " + id); },
+  onDragEnd: function (id) { log("onDragEnd " + id); },
+  onViewChange: function (v) { log("onViewChange " + v); },
+  onDayChange: function (d) { log("onDayChange day=" + d); }
+});
+document.getElementById("bFocus").onclick = function () { bom.focus("clip"); };
+document.getElementById("bFit").onclick = function () { bom.fit(); };
+document.getElementById("bFilter").onclick = function () { bom.filter(function (n) { return n.kind === "part" || n.kind === "root"; }); };
+document.getElementById("bUnfilter").onclick = function () { bom.filter(null); };
+document.getElementById("bCollapse").onclick = function () { bom.collapse("eng"); };
+document.getElementById("bExpand").onclick = function () { bom.expand("eng"); };
 keifu.mount(document.getElementById("lin"), {
   nodes: [
     {id:"v1", label:"Draft A", kind:"design", group:"design", day:0},
