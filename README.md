@@ -1,8 +1,8 @@
 # chat-map
 
-**Your conversation landscape, as one map.** Every chat thread a node, every branch / handover / recurring delivery an edge — with a timeline you can play back day by day.
+A map of your Muse chats: each thread a node, each branch, handover or recurring delivery an edge, on a timeline you can play back. It is a skill — instructions an AI assistant follows — not an app.
 
-**▶ Live demo: [taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — open it and touch it. No install, no sign-up.
+**Live demo: [taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — the pages there are served from this repository's `docs/` folder, so what you see is the code in this repo, running.
 
 ![chat-map demo — the landscape grows day by day](docs/images/demo-en.gif)
 
@@ -10,45 +10,35 @@
 
 1. Give this repository to your Muse assistant (or install the skill).
 2. Ask: **“Map my chats.”**
-3. Get back one HTML map of your own threads. No code to write.
+3. You get back one HTML file with the map of your own threads.
 
-## New in v2.2
+## keifu — the viewer on its own
 
-- **Search** — a magnifier in the bar finds a chat by name or role and jumps to it in whichever view is open (graph, cards or tree).
-- **New-arrival highlight** — chats born since you last looked carry a small marker, with a chip that walks you through them; after you have seen them, the chip stays as "Prev" and reopens the same list, so nothing is lost by acknowledging it.
-- **One tone button** — the three tone buttons became a single button that cycles Standard → Dark → Mono; its icon shows the tone you are in.
-- **Obsidian links restored** — timeline entries can again open notes in the Obsidian iOS app (`vaultIOS`) or a local browser page (`browserUrl`) where those fields are provided.
+The viewer underneath also ships separately as **keifu** （系譜， "lineage"): one zero-dependency file, [`keifu/keifu.js`](keifu/keifu.js) (also `keifu.mjs` for ES modules, with TypeScript definitions in `keifu.d.ts`).
 
-Earlier: v2.1 added the **tree view** (clusters as folders, chats as files) and the **mono tone** (grey structure, monospace type, one yellow highlight); v2.0 unified the graph and card views in one widget; v1 was the original graph-only map. Full notes: [Releases](https://github.com/taisukey/chat-map/releases).
+```js
+var h = keifu.mount(el, { nodes: [...], edges: [...] }, {});
+h.setLayout("hierarchy");   // or "force" / "timeline"
+```
+
+You get graph / cards / tree views, a detail panel whose composition and where-used lists are derived from the edges, and — when the data carries days — a lineage timeline with playback and ghost display for superseded nodes. The handle adds programmatic control (`select`, `focus`, `filter`, `collapse`, `setData`, …), callbacks, render hooks for nodes and the detail panel, tone presets, and `exportSVG()`. The [keifu demo](https://taisukey.github.io/chat-map/examples/keifu.html) drives all of it from buttons, so you can try the API without writing code.
+
+![keifu demo — a bill of materials drawn by keifu.js alone](docs/images/keifu-en.png)
+
+![keifu demo — switching layouts](docs/images/keifu-en.gif)
+
+What changed in each version is in the commit history and the releases; the demo above is the current state.
 
 ## Which template should I use?
 
-Use the current one: the skill renders with `assets/chat-map-template-v21.html`, which carries all the features above. (The file name follows the template generation, not the release number — the v2.2 features live in the v21 file.) The older templates stay in the repo for reference, and for anyone who prefers them:
+The skill renders with `assets/chat-map-template-v21.html`, which carries everything: graph / cards / tree, search, the new-arrival highlight, and the three tones. (The file name follows the template generation, not the release number.) Older templates stay in the repo:
 
-- **v1** (`assets/chat-map-template.html`) — the original graph-only map. The lightest option if the landscape and the timeline are all you want.
+- **v1** (`assets/chat-map-template.html`) — the original graph-only map, the lightest option.
 - **v2** (`assets/chat-map-template-v2.html`) — graph + cards, from before the tree view and the mono tone.
 
-## Put a network diagram on your own website
+## The same viewer on your own website
 
-The viewer underneath chat-map is a general one: give it nodes and edges as JSON, and it draws the network — graph, cards and tree. You do not have to be an engineer, and you do not need AI to use it.
-
-- A family tree, a team chart, the parts of a machine, the stops on a trip — if it can be drawn with circles and lines, it fits.
-- Copy one HTML file to your website, swap in your data, and the diagram is live. That is the whole recipe.
-- Nothing to install, nothing that tracks your visitors, and it keeps working offline.
-
-**For engineers:** zero dependencies, no build step, no framework. The renderer is plain SVG inside one self-contained HTML file, the data contract is a single JSON object, and the nodes stay in the DOM — searchable, styleable through CSS variables, and readable by screen readers in the card and tree views. Embed it in a static site, a server template, or a GitHub Pages folder as-is. The [live demo](https://taisukey.github.io/chat-map/) is this exact code, served from this repository's `docs/` folder.
-
-## keifu — the component, extracted
-
-The viewer also ships on its own as **keifu** （系譜， "lineage"): [`keifu/keifu.js`](keifu/keifu.js), a single zero-dependency file. Call `keifu.mount(el, data, opts)` with nodes and edges as JSON and you get the graph / cards / tree views, a detail panel whose composition and where-used lists are derived from the edges, and — when your data carries days — a lineage timeline with playback, derive edges and ghost display for superseded nodes. Live: [the keifu demo](https://taisukey.github.io/chat-map/examples/keifu.html) draws a bill of materials and a design lineage with nothing but that file.
-
-Since v0.2 the mount returns a handle for programmatic control — `select / focus / highlight / filter / expand / collapse / fit / setData` (positions of surviving nodes are kept) — with `onSelect / onHover / onDragEnd / onViewChange / onDayChange` callbacks, plus wheel / pinch zoom and background pan. The demo page drives all of it from buttons.
-
-v0.3 adds layouts: `setLayout("force" | "hierarchy" | "timeline")` — layered placement for DAGs (cycle edges are ignored for depth) and a day-column placement for lineages. The force layout uses Barnes–Hut repulsion above 50 nodes with close-range softening and alpha cooling, so dense graphs still come to rest: a 200-node / 360-edge layered DAG settles in about 8 seconds under a strict all-nodes-still criterion.
-
-v0.4 opens the rendering: `renderNode(node, {color, radius, svgNS})` draws nodes your way (images, badges, bars), `renderDetail(node, {children, parents})` replaces the detail panel, a per-property `nodeStyle` dictionary resolves color / radius / shape by kind → group → default, and tone presets (`std` / `dark` / `mono`) ship built in via `setTone`.
-
-v0.5 is the developer-experience release: full TypeScript definitions (`keifu/keifu.d.ts`, verified with `tsc --strict` against a sample), an ES-module build (`keifu/keifu.mjs`, generated from the same source), `exportSVG()` for a self-contained standalone SVG (stable output size, tone-aware background), and keyboard navigation (arrow keys move the selection, Enter centres it).
+Nothing about the viewer is specific to chats. Give it nodes and edges as JSON — a family tree, a team chart, the parts of a machine — and it draws the network. One HTML file on your site, your data swapped in; no install, no tracking, works offline. For engineers: plain SVG in a single file, one JSON contract, nodes stay in the DOM (searchable, styleable via CSS variables, readable by screen readers in the card and tree views).
 
 <details>
 <summary><b>What it produces</b></summary>
@@ -94,6 +84,7 @@ Optional: timeline entries can link to Obsidian summary notes via `obsidian://` 
 - `assets/chat-map-template-v21.html` — the unified widget (graph / cards / tree × standard / dark / mono)
 - `assets/chat-map-template-v2.html` — the previous unified widget (graph / cards)
 - `assets/chat-map-template.html` — the original graph-only template (v1)
+- `keifu/` — the standalone viewer component (`keifu.js`, `keifu.mjs`, `keifu.d.ts`)
 - `tests/` — static checks for the templates and the `CM_DATA` contract (see below)
 
 </details>
@@ -126,21 +117,13 @@ The same validator can check an exported data file on its own: `python3 tests/ru
 
 チャットが Main と多数の Side chat に枝分かれすると、全体像が見えなくなります。chat-map は各スレッドをノード、関係（分岐／引継ぎ／定期配信／関連）をエッジとして一枚の地図にし、日付スライダーと再生で「いつ何が生まれたか」まで辿れるエージェントスキルです。
 
-**▶ ライブデモ：[taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — 開いて触れます。インストールも登録もいりません。
+**ライブデモ：[taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — このリポジトリの `docs/` から配信している、そのままのコードです。
 
-使い方は、Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけ。現行版 v2.2 では **検索** と **新着ハイライト** が加わり、v2.1 で加わったクラスタをフォルダのように畳める **ツリー表示** と、モノクロ＋黄色ハイライトの **mono 色調** も使えます。テンプレートは通常、現行版の `assets/chat-map-template-v21.html` を使います（グラフだけの軽い地図でよければ、初代 v1 のテンプレートも残してあります）。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
+使い方は、Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけ。テンプレートは現行版の `assets/chat-map-template-v21.html`（グラフ／カード／ツリー、検索、新着ハイライト、色調3種）を使います。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
+
+ビューア部分は **keifu（系譜）** として単体でも使えます（`keifu/keifu.js`、依存ゼロの1ファイル）。ノードとエッジの JSON を渡せば、部品表や家系図のようなネットワーク図も同じ仕組みで描けます。[keifu のデモ](https://taisukey.github.io/chat-map/examples/keifu.html)ではボタンから API を試せます。
 
 ![chat-map デモ — 日ごとに育っていく地図（日本語）](docs/images/demo-ja.gif)
-
-### 自分のウェブサイトにも、ネットワーク図を
-
-chat-map の下にあるビューアは汎用のものです。ノードとエッジを JSON で渡せば、グラフ／カード／ツリーの3つの顔で描きます。エンジニアでなくても、AI がなくても使えます。
-
-- 家系図、チームの相関図、機械の部品表、旅の行程——丸と線で描けるものなら、何でも合います
-- HTML ファイルを1つ自分のサイトに置いて、データを差し替えるだけ。それで公開できます
-- インストール不要、訪問者を追跡する仕組みもなし、オフラインでも動きます
-
-エンジニア向けに言うと：依存ゼロ、ビルド工程なし、フレームワークなし。描画は単一ファイルの中の素の SVG、データ契約は JSON 1オブジェクトです。ノードは DOM に残るので検索でき、CSS 変数で色を変えられ、カードとツリー表示はスクリーンリーダーでも読めます。ライブデモは、このリポジトリの `docs/` から配信している、まさにこのコードです。
 
 テンプレートとデータ形式の静的チェックは `python3 tests/run_tests.py` で実行できます（Python 3 の標準ライブラリのみ、追加インストール不要）。
 
