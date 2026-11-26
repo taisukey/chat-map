@@ -47,7 +47,9 @@ button{font:inherit;padding:4px 10px;border:1px solid var(--color-line);border-r
 <button id="bLayF">layout: force</button>
 <button id="bLayH">layout: hierarchy</button>
 <button id="bLayT">layout: timeline</button>
+<button id="bSvg">export SVG</button>
 </p>
+<p class="muted">Keyboard: click the graph frame, then arrow keys move the selection and Enter centres it.</p>
 <p class="muted" id="log">events: —</p>
 <div class="box" id="bom"></div>
 <p class="muted">Wheel zooms, dragging the background pans, hovering a node fires onHover, ending a drag fires onDragEnd.</p>
@@ -107,6 +109,15 @@ document.getElementById("bExpand").onclick = function () { bom.expand("eng"); };
 document.getElementById("bLayF").onclick = function () { bom.setLayout("force"); };
 document.getElementById("bLayH").onclick = function () { bom.setLayout("hierarchy"); };
 document.getElementById("bLayT").onclick = function () { bom.setLayout("timeline"); };
+document.getElementById("bSvg").onclick = function () {
+  var s = bom.exportSVG();
+  if (!s) return;
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([s], { type: "image/svg+xml" }));
+  a.download = "keifu-bom.svg";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
 keifu.mount(document.getElementById("lin"), {
   nodes: [
     {id:"v1", label:"Draft A", kind:"design", group:"design", day:0},

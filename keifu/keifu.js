@@ -7,7 +7,8 @@
    Spec: ../COMPONENT-SPEC.md — Roadmap: ../KEIFU-ROADMAP.md
      (Phase 1: programmatic control + viewport;
       Phase 2: layouts force/hierarchy/timeline, Barnes-Hut for large n;
-      Phase 3: renderNode/renderDetail hooks, nodeStyle dict, tone presets)
+      Phase 3: renderNode/renderDetail hooks, nodeStyle dict, tone presets;
+      Phase 4: exportSVG, keyboard navigation)
    Usage: keifu.mount(el, data, opts)
      data: {nodes:[{id,label,kind,group,day,meta,superseded}],
             edges:[{from,to,qty,label,type,day}],
@@ -22,7 +23,8 @@
             renderNode(node,{color,radius,svgNS}) -> SVGElement,
             renderDetail(node,{children,parents}) -> string|Element}
    Returns a handle: {setData, select, focus, highlight, filter,
-                      expand, collapse, fit, setLayout, setTone, destroy}.
+                      expand, collapse, fit, setLayout, setTone,
+                      exportSVG, destroy}.
 */
 (function (global) {
   "use strict";
@@ -207,6 +209,32 @@
     slider.addEventListener("input", function () { stopPlay(); setDay(days[Number(slider.value)], true); });
     var dateEl = document.createElement("span");
     bar.appendChild(playBtn); bar.appendChild(slider); bar.appendChild(dateEl);
+    root.setAttribute("tabindex", "0");
+    root.setAttribute("aria-label", "keifu viewer (arrow keys move the selection, Enter focuses)");
+    root.addEventListener("keydown", function (e) {
+      if (state.view !== "graph") return;
+      if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT" || e.target.isContentEditable)) return;
+      var dirs = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+      if (e.key === "Enter" && state.selected) { e.preventDefault(); focusOn(state.selected); return; }
+      var d = dirs[e.key];
+      if (!d) return;
+      e.preventDefault();
+      var vis = N.filter(visNode);
+      if (!vis.length) return;
+      var cur = state.selected ? byId[state.selected] : null;
+      if (!cur || !visNode(cur)) { select(vis[0].id, true); return; }
+      var best = null, bestScore = Infinity;
+      vis.forEach(function (n) {
+        if (n === cur) return;
+        var dx = n.x - cur.x, dy = n.y - cur.y;
+        var primary = dx * d[0] + dy * d[1];
+        if (primary <= 4) return;
+        var perp = Math.abs(dx * d[1] - dy * d[0]);
+        var score = primary + perp * 2;
+        if (score < bestScore) { bestScore = score; best = n; }
+      });
+      if (best) select(best.id, true);
+    });
     var body = document.createElement("div"); root.appendChild(body);
     var detail = document.createElement("div"); root.appendChild(detail);
     var eventsBox = document.createElement("div"); eventsBox.className = "kf-events"; root.appendChild(eventsBox);
@@ -728,6 +756,31 @@
       expand: function (id) { delete state.collapsed[id]; renderBody(); },
       collapse: function (id) { state.collapsed[id] = 1; renderBody(); },
       fit: function () { fit(); },
+      exportSVG: function () {
+        if (state.view !== "graph" || !svgEl) return null;
+        var clone = svgEl.cloneNode(true);
+        clone.setAttribute("xmlns", NS);
+        var nums = (clone.getAttribute("viewBox") || "").match(/-?[\d.]+/g);
+        var vx = nums ? Number(nums[0]) : 0, vy = nums ? Number(nums[1]) : 0;
+        var vw = nums ? Number(nums[2]) : W, vh = nums ? Number(nums[3]) : H;
+        /* Output size is stable (the canvas size); the viewBox carries the
+           current zoom/pan region, whose aspect always matches W:H. */
+        clone.setAttribute("width", W);
+        clone.setAttribute("height", H);
+        var dark = state.tone === "dark";
+        var st = document.createElementNS(NS, "style");
+        st.textContent = ".kf-edge{stroke:#999;stroke-width:1.2}.kf-edge.derive{stroke-dasharray:5 4}" +
+          ".kf-node text{fill:" + (dark ? "#eee" : "#222") + ";font:11px ui-monospace,monospace;text-anchor:middle}" +
+          ".kf-node .kf-dot{stroke:#fff;stroke-width:1.5}.kf-node.dim,.kf-edge.dim{opacity:.15}" +
+          ".kf-node.ghost{opacity:.35}.kf-node.ghost .kf-dot{stroke-dasharray:3 3}";
+        clone.insertBefore(st, clone.firstChild);
+        var bg = document.createElementNS(NS, "rect");
+        bg.setAttribute("x", vx); bg.setAttribute("y", vy);
+        bg.setAttribute("width", vw); bg.setAttribute("height", vh);
+        bg.setAttribute("fill", dark ? "#151516" : "#ffffff");
+        clone.insertBefore(bg, st.nextSibling);
+        return new XMLSerializer().serializeToString(clone);
+      },
       setTone: function (name) {
         if (["std", "dark", "mono"].indexOf(name) < 0) return;
         state.tone = name;
@@ -744,5 +797,5 @@
     };
   }
 
-  global.keifu = { mount: mount, version: "0.4.0" };
+  global.keifu = { mount: mount, version: "0.5.0" };
 })(typeof window !== "undefined" ? window : this);

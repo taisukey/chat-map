@@ -48,6 +48,8 @@ v0.3 adds layouts: `setLayout("force" | "hierarchy" | "timeline")` — layered p
 
 v0.4 opens the rendering: `renderNode(node, {color, radius, svgNS})` draws nodes your way (images, badges, bars), `renderDetail(node, {children, parents})` replaces the detail panel, a per-property `nodeStyle` dictionary resolves color / radius / shape by kind → group → default, and tone presets (`std` / `dark` / `mono`) ship built in via `setTone`.
 
+v0.5 is the developer-experience release: full TypeScript definitions (`keifu/keifu.d.ts`, verified with `tsc --strict` against a sample), an ES-module build (`keifu/keifu.mjs`, generated from the same source), `exportSVG()` for a self-contained standalone SVG (stable output size, tone-aware background), and keyboard navigation (arrow keys move the selection, Enter centres it).
+
 <details>
 <summary><b>What it produces</b></summary>
 
