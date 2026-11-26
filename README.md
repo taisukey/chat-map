@@ -38,6 +38,10 @@ The viewer underneath chat-map is a general one: give it nodes and edges as JSON
 
 **For engineers:** zero dependencies, no build step, no framework. The renderer is plain SVG inside one self-contained HTML file, the data contract is a single JSON object, and the nodes stay in the DOM — searchable, styleable through CSS variables, and readable by screen readers in the card and tree views. Embed it in a static site, a server template, or a GitHub Pages folder as-is. The [live demo](https://taisukey.github.io/chat-map/) is this exact code, served from this repository's `docs/` folder.
 
+## keifu — the component, extracted
+
+The viewer also ships on its own as **keifu** （系譜， "lineage"): [`keifu/keifu.js`](keifu/keifu.js), a single zero-dependency file. Call `keifu.mount(el, data, opts)` with nodes and edges as JSON and you get the graph / cards / tree views, a detail panel whose composition and where-used lists are derived from the edges, and — when your data carries days — a lineage timeline with playback, derive edges and ghost display for superseded nodes. Live: [the keifu demo](https://taisukey.github.io/chat-map/examples/keifu.html) draws a bill of materials and a design lineage with nothing but that file.
+
 <details>
 <summary><b>What it produces</b></summary>
 

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>keifu — the extracted component, live</title>
+<style>
+:root{color-scheme:light dark;
+--color-gray:oklch(65% 0.01 286);
+--color-gray100:color-mix(in srgb, white 80%, var(--color-gray));
+--color-gray980:color-mix(in srgb, black 95%, var(--color-gray));
+--color-bg:light-dark(#f7f7f8,#151516);
+--color-fg:light-dark(var(--color-gray980),var(--color-gray100));
+--color-fg3:var(--color-gray);
+--color-line:color-mix(in srgb, var(--color-fg) 22%, transparent);
+--hl:#ffff00;
+--font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Monaco,"Cascadia Mono",Consolas,"Liberation Mono","Hiragino Kaku Gothic ProN",monospace}
+*{box-sizing:border-box}
+html{background-color:var(--color-bg);-webkit-font-smoothing:antialiased}
+::selection{background:var(--hl);color:#000}
+body{background-color:var(--color-bg);color:var(--color-fg);font-family:var(--font-mono);font-size:13px;line-height:22px;margin:0;padding:40px}
+a{color:inherit}
+a:hover{background:var(--hl);color:#000;text-decoration:none}
+.col{max-width:720px}
+.muted{color:var(--color-fg3)}
+.box{border:1px solid var(--color-line);border-radius:12px;padding:12px;margin:10px 0 26px}
+h1{font-size:16px;font-weight:600;margin:0 0 6px}
+h2{font-size:13px;font-weight:600;margin:22px 0 4px}
+.kf{--kf-border:var(--color-line);--kf-muted:var(--color-fg3)}
+</style>
+</head>
+<body>
+<div class="col">
+<h1># keifu — the extracted component, live</h1>
+<p class="muted">The two mounts below are drawn by <b>keifu.js</b> alone — the component extracted from chat-map. One script tag, one JSON object each. No build, no dependencies. Source: <a href="https://github.com/taisukey/chat-map/blob/main/keifu/keifu.js">keifu/keifu.js</a> in the repository (this page loads a copy of the same file).</p>
+
+<h2>## A bill of materials (DAG, quantities, a shared part)</h2>
+<div class="box" id="bom"></div>
+
+<h2>## A lineage (derive edges, a superseded draft, playback)</h2>
+<div class="box" id="lin"></div>
+
+<p class="muted">← <a href="./">Examples</a> · <a href="../">chat-map</a> · <a href="https://studiotico.com">studiotico.com</a></p>
+</div>
+<script src="keifu.js"></script>
+<script>
+keifu.mount(document.getElementById("bom"), {
+  nodes: [
+    {id:"proj", label:"Project", kind:"root", group:"bom", day:0, meta:{role:"Project root"}},
+    {id:"eng", label:"ENG-000", kind:"assembly", group:"bom", day:0, meta:{role:"Engine assembly"}},
+    {id:"pst", label:"PST-201", kind:"part", group:"bom", day:1, meta:{role:"Piston"}},
+    {id:"crank", label:"CRK-100", kind:"assembly", group:"bom", day:1, meta:{role:"Crankshaft assembly"}},
+    {id:"clip", label:"Circlip", kind:"part", group:"bom", day:2, meta:{role:"Shared fastener"}}
+  ],
+  edges: [
+    {from:"proj", to:"eng", qty:1, day:0},
+    {from:"eng", to:"pst", qty:1, day:1},
+    {from:"eng", to:"crank", qty:1, day:1},
+    {from:"pst", to:"clip", qty:2, day:2},
+    {from:"crank", to:"clip", qty:2, day:2}
+  ],
+  dates: ["2026-01-01","2026-01-02","2026-01-03"],
+  events: [
+    {day:0, text:"Design — the overall structure is defined"},
+    {day:1, text:"Prototype — components are added and revised"},
+    {day:2, text:"Verification — quantities are checked and adopted"}
+  ]
+}, {});
+keifu.mount(document.getElementById("lin"), {
+  nodes: [
+    {id:"v1", label:"Draft A", kind:"design", group:"design", day:0},
+    {id:"v2", label:"Draft B", kind:"design", group:"design", day:1},
+    {id:"old", label:"Draft A'", kind:"design", group:"design", day:1, superseded:true},
+    {id:"fin", label:"Final", kind:"design", group:"design", day:2}
+  ],
+  edges: [
+    {from:"v1", to:"v2", type:"derive", day:1},
+    {from:"v1", to:"old", type:"derive", day:1},
+    {from:"v2", to:"fin", type:"derive", day:2}
+  ],
+  dates: ["2026-02-01","2026-02-02","2026-02-03"],
+  events: [
+    {day:0, text:"First draft"},
+    {day:1, text:"Diverged into two drafts"},
+    {day:2, text:"Converged on the final"}
+  ]
+}, {});
+</script>
+</body>
+</html>
