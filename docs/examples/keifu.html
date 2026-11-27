@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>keifu — the extracted component, live</title>
+<title>keifu has moved — its own repository and demo</title>
 <style>
 :root{color-scheme:light dark;
 --color-gray:oklch(65% 0.01 286);
@@ -13,6 +13,7 @@
 --color-fg:light-dark(var(--color-gray980),var(--color-gray100));
 --color-fg3:var(--color-gray);
 --color-line:color-mix(in srgb, var(--color-fg) 22%, transparent);
+--color-line-soft:color-mix(in srgb, var(--color-fg) 13%, transparent);
 --hl:#ffff00;
 --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Monaco,"Cascadia Mono",Consolas,"Liberation Mono","Hiragino Kaku Gothic ProN",monospace}
 *{box-sizing:border-box}
@@ -21,159 +22,35 @@ html{background-color:var(--color-bg);-webkit-font-smoothing:antialiased}
 body{background-color:var(--color-bg);color:var(--color-fg);font-family:var(--font-mono);font-size:13px;line-height:22px;margin:0;padding:40px}
 a{color:inherit}
 a:hover{background:var(--hl);color:#000;text-decoration:none}
-.col{max-width:720px}
+:focus-visible{outline:2px solid var(--color-fg);outline-offset:2px}
+.col{max-width:640px}
 .muted{color:var(--color-fg3)}
-.box{border:1px solid var(--color-line);border-radius:12px;padding:12px;margin:10px 0 26px}
-h1{font-size:16px;font-weight:600;margin:0 0 6px}
-h2{font-size:13px;font-weight:600;margin:22px 0 4px}
-.kf{--kf-border:var(--color-line);--kf-muted:var(--color-fg3)}
-button{font:inherit;padding:4px 10px;border:1px solid var(--color-line);border-radius:999px;background:transparent;color:inherit;cursor:pointer;margin:0 4px 6px 0}
+.lockup{display:flex;align-items:center;gap:16px}
+.lockup .mark{flex:none;color:var(--color-fg)}
+.lockup .mark svg{height:40px;width:auto;display:block}
+.lockup .word{font-weight:700;font-size:15px;letter-spacing:.06em;white-space:nowrap}
+h1{font-size:15px;margin:28px 0 6px}
+h2{font-size:13px;margin:30px 0 6px}
+p{margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.btn{display:inline-block;border:1px solid var(--color-fg);padding:6px 14px;text-decoration:none;margin:0 8px 8px 0}
+.btn:hover{background:var(--hl);color:#000;border-color:var(--hl)}
+.card{border:1px solid var(--color-line);padding:10px 14px;margin:0 0 10px}
+.card b{display:block}
+.card span{color:var(--color-fg3)}
+ul{padding-left:18px;margin:0 0 10px}
+footer{margin-top:44px;color:var(--color-fg3);border-top:1px solid var(--color-line-soft);padding-top:10px}
 </style>
 </head>
 <body>
 <div class="col">
-<h1># keifu — the extracted component, live</h1>
-<p class="muted">The two mounts below are drawn by <b>keifu.js</b> alone — the component extracted from chat-map. One script tag, one JSON object each. No build, no dependencies. Source: <a href="https://github.com/taisukey/chat-map/blob/main/keifu/keifu.js">keifu/keifu.js</a> in the repository (this page loads a copy of the same file).</p>
-
-<h2>## A bill of materials (DAG, quantities, a shared part)</h2>
-<p class="muted">v0.2 adds a programmatic API. Drive it from outside:</p>
-<p>
-<button id="bFocus">focus(Circlip)</button>
-<button id="bFit">fit()</button>
-<button id="bFilter">filter(parts only)</button>
-<button id="bUnfilter">filter(null)</button>
-<button id="bCollapse">collapse(ENG-000)</button>
-<button id="bExpand">expand(ENG-000)</button>
-<button id="bLayF">layout: force</button>
-<button id="bLayH">layout: hierarchy</button>
-<button id="bLayT">layout: timeline</button>
-<button id="bSvg">export SVG</button>
-</p>
-<p class="muted">Keyboard: click the graph frame, then arrow keys move the selection and Enter centres it.</p>
-<p class="muted" id="log">events: —</p>
-<div class="box" id="bom"></div>
-<p class="muted">Wheel zooms, dragging the background pans, hovering a node fires onHover, ending a drag fires onDragEnd.</p>
-
-<h2>## A lineage (derive edges, a superseded draft, playback)</h2>
-<div class="box" id="lin"></div>
-
-<h2>## Custom rendering (renderNode / renderDetail) and tones</h2>
-<p class="muted">This third mount draws each node with <b>renderNode</b> (an image badge + label) and replaces the detail panel with <b>renderDetail</b> — click a node. Tone presets are built in:</p>
-<p>
-<button id="bToneStd">tone: std</button>
-<button id="bToneDark">tone: dark</button>
-<button id="bToneMono">tone: mono</button>
-</p>
-<div class="box" id="custom"></div>
-
-<p class="muted">← <a href="./">Examples</a> · <a href="../">chat-map</a> · <a href="https://studiotico.com">studiotico.com</a></p>
+<h1># keifu has moved</h1>
+<p>The standalone viewer that used to be demonstrated on this page now lives in its own home. This page is kept as a signpost, because the old demo address was published (it was the homepage of an early npm release).</p>
+<div class="card"><b><a href="https://taisukey.github.io/keifu/demo.html">Live demo</a></b><span>The full API console — layouts, themes, imports (Mermaid / DOT / timeline text) and exports, on keifu's own site.</span></div>
+<div class="card"><b><a href="https://taisukey.github.io/keifu/edit.html">Editor</a></b><span>Write text, get a graph: the text-editing tool page, with JSON / DOT export and share links.</span></div>
+<div class="card"><b><a href="https://github.com/taisukey/keifu">GitHub — taisukey/keifu</a></b><span>The library itself: one zero-dependency file, its changelog and its accessibility statement.</span></div>
+<div class="card"><b><a href="https://www.npmjs.com/package/@taisukey/keifu">npm — @taisukey/keifu</a></b><span>npm install @taisukey/keifu</span></div>
+<p class="muted">keifu was extracted from chat-map on 2026-11-26 and moved into the standalone repository on 2026-11-27. chat-map still renders its maps with it.</p>
+<p class="muted">← <a href="./">examples</a> · <a href="https://taisukey.github.io/chat-map/">chat-map</a> · <a href="https://studiotico.com">studiotico.com</a></p>
 </div>
-<script src="keifu.js"></script>
-<script>
-var logEl = document.getElementById("log");
-function log(m) { logEl.textContent = "events: " + m; }
-var bom = keifu.mount(document.getElementById("bom"), {
-  nodes: [
-    {id:"proj", label:"Project", kind:"root", group:"bom", day:0, meta:{role:"Project root"}},
-    {id:"eng", label:"ENG-000", kind:"assembly", group:"bom", day:0, meta:{role:"Engine assembly"}},
-    {id:"pst", label:"PST-201", kind:"part", group:"bom", day:1, meta:{role:"Piston"}},
-    {id:"crank", label:"CRK-100", kind:"assembly", group:"bom", day:1, meta:{role:"Crankshaft assembly"}},
-    {id:"clip", label:"Circlip", kind:"part", group:"bom", day:2, meta:{role:"Shared fastener"}}
-  ],
-  edges: [
-    {from:"proj", to:"eng", qty:1, day:0},
-    {from:"eng", to:"pst", qty:1, day:1},
-    {from:"eng", to:"crank", qty:1, day:1},
-    {from:"pst", to:"clip", qty:2, day:2},
-    {from:"crank", to:"clip", qty:2, day:2}
-  ],
-  dates: ["2026-01-01","2026-01-02","2026-01-03"],
-  events: [
-    {day:0, text:"Design — the overall structure is defined"},
-    {day:1, text:"Prototype — components are added and revised"},
-    {day:2, text:"Verification — quantities are checked and adopted"}
-  ]
-}, {
-  onSelect: function (id) { log("onSelect " + id); },
-  onHover: function (id) { if (id) log("onHover " + id); },
-  onDragEnd: function (id) { log("onDragEnd " + id); },
-  onViewChange: function (v) { log("onViewChange " + v); },
-  onDayChange: function (d) { log("onDayChange day=" + d); }
-});
-document.getElementById("bFocus").onclick = function () { bom.focus("clip"); };
-document.getElementById("bFit").onclick = function () { bom.fit(); };
-document.getElementById("bFilter").onclick = function () { bom.filter(function (n) { return n.kind === "part" || n.kind === "root"; }); };
-document.getElementById("bUnfilter").onclick = function () { bom.filter(null); };
-document.getElementById("bCollapse").onclick = function () { bom.collapse("eng"); };
-document.getElementById("bExpand").onclick = function () { bom.expand("eng"); };
-document.getElementById("bLayF").onclick = function () { bom.setLayout("force"); };
-document.getElementById("bLayH").onclick = function () { bom.setLayout("hierarchy"); };
-document.getElementById("bLayT").onclick = function () { bom.setLayout("timeline"); };
-document.getElementById("bSvg").onclick = function () {
-  var s = bom.exportSVG();
-  if (!s) return;
-  var a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([s], { type: "image/svg+xml" }));
-  a.download = "keifu-bom.svg";
-  a.click();
-  URL.revokeObjectURL(a.href);
-};
-keifu.mount(document.getElementById("lin"), {
-  nodes: [
-    {id:"v1", label:"Draft A", kind:"design", group:"design", day:0},
-    {id:"v2", label:"Draft B", kind:"design", group:"design", day:1},
-    {id:"old", label:"Draft A'", kind:"design", group:"design", day:1, superseded:true},
-    {id:"fin", label:"Final", kind:"design", group:"design", day:2}
-  ],
-  edges: [
-    {from:"v1", to:"v2", type:"derive", day:1},
-    {from:"v1", to:"old", type:"derive", day:1},
-    {from:"v2", to:"fin", type:"derive", day:2}
-  ],
-  dates: ["2026-02-01","2026-02-02","2026-02-03"],
-  events: [
-    {day:0, text:"First draft"},
-    {day:1, text:"Diverged into two drafts"},
-    {day:2, text:"Converged on the final"}
-  ]
-}, {});
-</script>
-<script>
-var custom = keifu.mount(document.getElementById("custom"), {
-  nodes: [
-    {id:"proj", label:"Project", kind:"root", group:"bom", day:0, meta:{role:"Project root"}},
-    {id:"eng", label:"ENG-000", kind:"assembly", group:"bom", day:0, meta:{role:"Engine assembly"}},
-    {id:"pst", label:"PST-201", kind:"part", group:"bom", day:1, meta:{role:"Piston"}},
-    {id:"clip", label:"Circlip", kind:"part", group:"bom", day:2, meta:{role:"Shared fastener"}}
-  ],
-  edges: [
-    {from:"proj", to:"eng", qty:1, day:0},
-    {from:"eng", to:"pst", qty:1, day:1},
-    {from:"pst", to:"clip", qty:2, day:2}
-  ]
-}, {
-  renderNode: function (n, h) {
-    var g = document.createElementNS(h.svgNS, "g");
-    var img = document.createElementNS(h.svgNS, "image");
-    var uri = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="10" fill="' + h.color + '"/><text x="12" y="16" font-size="11" text-anchor="middle" fill="#fff" font-family="monospace">' + n.label.charAt(0) + "</text></svg>");
-    img.setAttribute("href", uri);
-    img.setAttribute("x", -12); img.setAttribute("y", -12);
-    img.setAttribute("width", 24); img.setAttribute("height", 24);
-    g.appendChild(img);
-    var t = document.createElementNS(h.svgNS, "text");
-    t.textContent = n.label;
-    t.setAttribute("y", 26); t.setAttribute("text-anchor", "middle"); t.setAttribute("font-size", "11");
-    g.appendChild(t);
-    return g;
-  },
-  renderDetail: function (n, d) {
-    return "<div class='kf-detail'><h4>" + n.label + " (custom detail)</h4><div>" +
-      d.children.length + " children / " + d.parents.length + " parents — rendered by renderDetail</div></div>";
-  }
-});
-document.getElementById("bToneStd").onclick = function () { custom.setTone("std"); };
-document.getElementById("bToneDark").onclick = function () { custom.setTone("dark"); };
-document.getElementById("bToneMono").onclick = function () { custom.setTone("mono"); };
-</script>
 </body>
 </html>

@@ -22,14 +22,14 @@ A map of your Muse chats: each thread a node, each branch, handover or recurring
 
 ## keifu — the viewer on its own
 
-The viewer underneath also ships separately as **keifu** （系譜， "lineage"): one zero-dependency file, [`keifu/keifu.js`](keifu/keifu.js) (also `keifu.mjs` for ES modules, with TypeScript definitions in `keifu.d.ts`).
+The viewer underneath also ships separately as **keifu** （系譜， "lineage"): one zero-dependency file. keifu moved into its own repository on 2026-11-27 — [github.com/taisukey/keifu](https://github.com/taisukey/keifu), also on npm as [`@taisukey/keifu`](https://www.npmjs.com/package/@taisukey/keifu). The `keifu/` folder here is kept as a pointer.
 
 ```js
 var h = keifu.mount(el, { nodes: [...], edges: [...] }, {});
 h.setLayout("hierarchy");   // or "force" / "timeline"
 ```
 
-You get graph / cards / tree views, a detail panel whose composition and where-used lists are derived from the edges, and — when the data carries days — a lineage timeline with playback and ghost display for superseded nodes. The handle adds programmatic control (`select`, `focus`, `filter`, `collapse`, `setData`, …), callbacks, render hooks for nodes and the detail panel, tone presets, and `exportSVG()`. The [keifu demo](https://taisukey.github.io/chat-map/examples/keifu.html) drives all of it from buttons, so you can try the API without writing code.
+You get graph / cards / tree views, a detail panel whose composition and where-used lists are derived from the edges, and — when the data carries days — a lineage timeline with playback and ghost display for superseded nodes. The handle adds programmatic control (`select`, `focus`, `filter`, `collapse`, `setData`, …), callbacks, render hooks for nodes and the detail panel, tone presets, and `exportSVG()`. The [keifu demo](https://taisukey.github.io/keifu/demo.html) drives all of it from buttons, so you can try the API without writing code.
 
 ![keifu demo — a bill of materials drawn by keifu.js alone](docs/images/keifu-en.png)
 
@@ -92,7 +92,7 @@ Optional: timeline entries can link to Obsidian summary notes via `obsidian://` 
 - `assets/chat-map-template-v21.html` — the unified widget (graph / cards / tree × standard / dark / mono)
 - `assets/chat-map-template-v2.html` — the previous unified widget (graph / cards)
 - `assets/chat-map-template.html` — the original graph-only template (v1)
-- `keifu/` — the standalone viewer component (`keifu.js`, `keifu.mjs`, `keifu.d.ts`)
+- `keifu/` — a pointer to keifu's own repository (the component moved out on 2026-11-27)
 - `tests/` — static checks for the templates and the `CM_DATA` contract (see below)
 
 </details>
@@ -129,7 +129,7 @@ The same validator can check an exported data file on its own: `python3 tests/ru
 
 使い方は、Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけ。テンプレートは現行版の `assets/chat-map-template-v21.html`（グラフ／カード／ツリー、検索、新着ハイライト、色調3種）を使います。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
 
-ビューア部分は **keifu（系譜）** として単体でも使えます（`keifu/keifu.js`、依存ゼロの1ファイル）。ノードとエッジの JSON を渡せば、部品表や家系図のようなネットワーク図も同じ仕組みで描けます。[keifu のデモ](https://taisukey.github.io/chat-map/examples/keifu.html)ではボタンから API を試せます。
+ビューア部分は **keifu（系譜）** として単体でも使えます（依存ゼロの1ファイル）。keifu は 2026-11-27 に独立リポジトリ [github.com/taisukey/keifu](https://github.com/taisukey/keifu) へ移りました（npm では `@taisukey/keifu`）。ノードとエッジの JSON を渡せば、部品表や家系図のようなネットワーク図も同じ仕組みで描けます。[keifu のデモ](https://taisukey.github.io/keifu/demo.html)ではボタンから API を試せます。
 
 ![chat-map デモ — 日ごとに育っていく地図（日本語）](docs/images/demo-ja.gif)
 
