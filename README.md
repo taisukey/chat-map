@@ -1,5 +1,10 @@
 # chat-map
 
+<p align="center">
+  <a href="https://github.com/taisukey/chat-map/releases"><img src="https://img.shields.io/github/v/release/taisukey/chat-map" alt="Latest release"></a>
+  <a href="https://github.com/taisukey/chat-map/blob/main/LICENSE"><img src="https://img.shields.io/github/license/taisukey/chat-map" alt="License: MIT"></a>
+</p>
+
 A map of your Muse chats: each thread a node, each branch, handover or recurring delivery an edge, on a timeline you can play back. It is a skill — instructions an AI assistant follows — not an app.
 
 **Live demo: [taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — the pages there are served from this repository's `docs/` folder, so what you see is the code in this repo, running.
