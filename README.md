@@ -16,6 +16,10 @@
   <a href="https://taisukey.github.io/chat-map/"><img src="docs/images/demo-button.svg" alt="See sample chat maps"></a>
 </p>
 
+<p align="center">
+  <b>English</b> · <a href="README.ja.md">日本語</a>
+</p>
+
 A map of your Muse chats: each thread a node, each branch, handover or recurring delivery an edge, on a timeline you can play back. It is a skill — instructions an AI assistant follows — not an app.
 
 **Live demo: [taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — the pages there are served from this repository's `docs/` folder, so what you see is the code in this repo, running.
@@ -128,20 +132,6 @@ The same validator can check an exported data file on its own: `python3 tests/ru
 **Other AI agents?** The skill uses the standard agent-skills format (`SKILL.md`), so compatible agents may follow it. Verified with Muse only.
 
 </details>
-
-## 日本語
-
-チャットが Main と多数の Side chat に枝分かれすると、全体像が見えなくなります。chat-map は各スレッドをノード、関係（分岐／引継ぎ／定期配信／関連）をエッジとして一枚の地図にし、日付スライダーと再生で「いつ何が生まれたか」まで辿れるエージェントスキルです。
-
-**ライブデモ：[taisukey.github.io/chat-map](https://taisukey.github.io/chat-map/)** — このリポジトリの `docs/` から配信している、そのままのコードです。
-
-使い方は、Muse にこのリポジトリを渡して「私のチャットの地図を作って」と頼むだけ。テンプレートは現行版の `assets/chat-map-template-v21.html`（グラフ／カード／ツリー、検索、新着ハイライト、色調3種）を使います。日付や関係は記録に基づくものだけを使い、根拠のない日付は「目安」と明記します。
-
-ビューア部分は **keifu（系譜）** として単体でも使えます（依存ゼロの1ファイル）。keifu は 2026-11-27 に独立リポジトリ [github.com/taisukey/keifu](https://github.com/taisukey/keifu) へ移りました（npm では `@taisukey/keifu`）。ノードとエッジの JSON を渡せば、部品表や家系図のようなネットワーク図も同じ仕組みで描けます。[keifu のデモ](https://taisukey.github.io/keifu/demo.html)ではボタンから API を試せます。
-
-![chat-map デモ — 日ごとに育っていく地図（日本語）](docs/images/demo-ja.gif)
-
-テンプレートとデータ形式の静的チェックは `python3 tests/run_tests.py` で実行できます（Python 3 の標準ライブラリのみ、追加インストール不要）。
 
 ---
 
