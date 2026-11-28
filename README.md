@@ -9,6 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/taisukey/chat-map/releases"><img src="https://img.shields.io/github/v/release/taisukey/chat-map" alt="Latest release"></a>
+  <a href="https://github.com/taisukey/chat-map/actions/workflows/tests.yml"><img src="https://github.com/taisukey/chat-map/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
   <a href="https://github.com/taisukey/chat-map/blob/main/LICENSE"><img src="https://img.shields.io/github/license/taisukey/chat-map" alt="License: MIT"></a>
 </p>
 <p align="center">
