@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.svg">
+    <img src="docs/images/logo-light.svg" alt="chat-map logo" width="88">
+  </picture>
+</p>
+
 # chat-map
 
 <p align="center">
@@ -5,7 +12,7 @@
   <a href="https://github.com/taisukey/chat-map/blob/main/LICENSE"><img src="https://img.shields.io/github/license/taisukey/chat-map" alt="License: MIT"></a>
 </p>
 <p align="center">
-  <a href="https://taisukey.github.io/chat-map/"><img src="https://img.shields.io/badge/demo-see%20sample%20maps-10b981?style=for-the-badge&labelColor=0c0c0e" alt="See sample chat maps"></a>
+  <a href="https://taisukey.github.io/chat-map/"><img src="docs/images/demo-button.svg" alt="See sample chat maps"></a>
 </p>
 
 A map of your Muse chats: each thread a node, each branch, handover or recurring delivery an edge, on a timeline you can play back. It is a skill — instructions an AI assistant follows — not an app.
